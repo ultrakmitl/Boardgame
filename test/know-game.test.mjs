@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {animals, colors, deck, rules, startGame, beginRound, playTurn, guessRule} from '../public/know-rules.js';
+import {animals, colors, deck, rules, startGame, selectRule, clueOptions, beginRound, playTurn, guessRule} from '../public/know-rules.js';
+
+function beginWithFirstOption(game) {
+  selectRule(game, game.ruleOptions[0].id);
+  beginRound(game, clueOptions(game)[0].id);
+}
 
 test('each animal and rank comes in all three colors exactly once', () => {
   assert.equal(animals.length, 4);
@@ -33,7 +38,7 @@ test('each rule has distinct outcomes, with passing and failing cards for every 
 
 test('multi-card rejection is atomic and an incorrect final guess passes the turn', () => {
   const game = startGame(['A', 'B', 'C', 'D']);
-  beginRound(game);
+  beginWithFirstOption(game);
   game.rule = rules[0];
   const passing = deck.find(card => card.color === 0);
   const failing = deck.find(card => card.color !== 0);
@@ -61,17 +66,18 @@ test('the keeper sits out, rotates each round, and gets a different rule', () =>
     assert.equal(game.round, round);
     assert.equal(game.keeper, (round - 1) % names.length);
     assert.equal(game.turn, round % names.length);
+    beginWithFirstOption(game);
     assert.equal(game.players[game.keeper].hand.length, 0);
     assert(game.players.every((player, index) => index === game.keeper || player.hand.length === 7));
     const next = startGame(names, game);
-    assert.notEqual(next.rule.id, game.rule.id);
+    assert(next.ruleOptions.every(option => !game.usedRuleIds.includes(option.id)));
     game = next;
   }
 });
 
 test('play and guess advance past the keeper when the seat order wraps', () => {
   const game = startGame(['A', 'B', 'C']);
-  beginRound(game);
+  beginWithFirstOption(game);
   game.rule = rules[0];
   const passing = deck.filter(card => card.color === 0);
   game.turn = 2;
@@ -90,13 +96,14 @@ test('every rule can be drawn on the first round', t => {
   for (const rule of rules) {
     let index = rules.length - 1;
     const mock = t.mock.method(Math, 'random', () => index-- === rule.id ? 0 : 0.999);
-    assert.equal(startGame(['A', 'B', 'C']).rule, rule);
+    assert.equal(startGame(['A', 'B', 'C']).ruleOptions[0], rule);
     mock.mock.restore();
   }
 });
 
 test('all players tied for most cards lose a point, including the correct guesser', () => {
   const game = startGame(['Keeper', 'First guess', 'Correct guess', 'Other']);
+  beginWithFirstOption(game);
   game.phase = 'guess';
   game.choices = [game.rule];
   game.turn = 2;
@@ -117,6 +124,7 @@ test('scores carry over one full keeper rotation and tied leaders share the win'
   const names = ['A', 'B', 'C'];
   let game = startGame(names);
   for (let round = 1; round <= names.length; round++) {
+    beginWithFirstOption(game);
     game.phase = 'guess';
     game.choices = [game.rule];
     game.players[game.turn].hand = [];

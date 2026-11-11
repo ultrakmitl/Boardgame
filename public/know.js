@@ -1,4 +1,4 @@
-import {animals, colors, levels, rules, startGame, beginRound, playTurn, guessRule} from './know-rules.js';
+import {animals, colors, levels, rules, startGame, selectRule, clueOptions, beginRound, playTurn, guessRule} from './know-rules.js';
 
 const byId = id => document.getElementById(id);
 let game;
@@ -26,9 +26,9 @@ function button(text, onClick, primary = false) {
   return node;
 }
 
-function cardFace(card, interactive = false) {
+function cardFace(card, interactive = false, onChoose = null) {
   const label = `สี${colors[card.color]} เลข ${card.number} ${animals[card.animal]}`;
-  const face = element(interactive ? 'button' : 'div', '', `card color-${card.color}`);
+  const face = element(interactive || onChoose ? 'button' : 'div', '', `card color-${card.color}`);
   face.setAttribute('aria-label', label);
   const top = element('span', String(card.number), 'rank');
   top.append(element('small', colors[card.color]));
@@ -39,6 +39,10 @@ function cardFace(card, interactive = false) {
   }
   figures.setAttribute('aria-hidden', 'true');
   face.append(top, figures, element('small', animals[card.animal], 'species'));
+  if (onChoose) {
+    face.type = 'button';
+    face.addEventListener('click', () => onChoose(card.id));
+  }
   if (interactive) {
     face.type = 'button';
     face.addEventListener('click', () => {
@@ -90,19 +94,16 @@ function render(focus = true) {
     return tile;
   }));
   line.scrollLeft = line.scrollWidth;
-  const log = byId('log');
-  log.replaceChildren(...game.log.slice().reverse().map(record => {
-    const rejected = !record.accepted && !record.trade;
-    const item = element(rejected ? 'div' : 'details', '', rejected ? 'rejected-play' : '');
-    item.append(element(rejected ? 'strong' : 'summary', `${record.name} · ${record.text}`));
-    const faces = element('div', '', 'log-cards');
-    if (record.played) faces.append(element('p', 'ไพ่ที่ผู้คุมกฎลงให้'), cardFace(record.played));
-    if (record.trade) faces.append(element('p', 'ไพ่ที่เปิดตอนขอเปลี่ยน'));
-    faces.append(...record.cards.map(card => cardFace(card)));
-    item.append(faces);
-    return item;
-  }));
-  if (!game.log.length) log.append(element('p', 'ยังไม่มีการลงไพ่'));
+  const submission = remote ? remote.submission : pending && pending.guess === undefined && {
+    trade: pending.trade,
+    cards: pending.trade ? player.hand : pending.ids.map(id => player.hand.find(card => card.id === id)),
+  };
+  byId('submission').hidden = !submission;
+  byId('submission-title').textContent = submission
+    ? `${player.name} ${submission.trade ? 'เปิดไพ่ทั้งมือ' : 'ลงไพ่'} ${submission.cards.length} ใบ · รอตรวจ`
+    : '';
+  byId('submission-cards').replaceChildren(...(submission ? submission.cards.map(card => cardFace(card)) : []));
+  renderHistory();
 
   const title = byId('turn-title');
   const actions = byId('actions');
@@ -117,11 +118,11 @@ function render(focus = true) {
     if (!open) {
       byId('notice').textContent = 'ให้ผู้คุมกฎดูหน้าจอคนเดียว';
       actions.append(button('เปิดหน้าผู้คุมกฎ', () => { open = true; render(); }, true));
+    } else if (game.phase === 'keeper') {
+      renderKeeperSetup(actions);
     } else {
       actions.append(element('p', game.rule.label, 'secret-rule'));
-      if (game.phase === 'keeper') {
-        actions.append(button('ซ่อนกฎและเริ่มรอบ', () => { beginRound(game); endTurn(''); }, true));
-      } else if (pending.guess !== undefined) {
+      if (pending.guess !== undefined) {
         const choice = game.choices.find(rule => rule.id === pending.guess);
         actions.append(element('p', `${player.name} เลือก “${choice.label}”`));
         actions.append(button('ยืนยันผลการทายและซ่อนกฎ', () => {
@@ -129,13 +130,9 @@ function render(focus = true) {
           endTurn(game.phase === 'finished' ? '' : `${player.name} ตอบยังไม่ถูก ส่งสิทธิ์ให้คนถัดไป`);
         }, true));
       } else {
-        const candidates = pending.trade ? player.hand : pending.ids.map(id => player.hand.find(card => card.id === id));
-        const tray = element('div', '', 'hand');
-        tray.append(...candidates.map(card => cardFace(card)));
-        actions.append(tray);
         const controls = element('div', '', 'controls');
         if (pending.trade) {
-          const passing = candidates.filter(card => game.rule.matches(card, game.last));
+          const passing = submission.cards.filter(card => game.rule.matches(card, game.last));
           if (passing.length) {
             passing.forEach(card => {
               const label = `ลง ${colors[card.color]} ${card.number} · ${animals[card.animal]}`;
@@ -237,6 +234,35 @@ for (const [level, label] of levels.entries()) {
   list.append(...rules.filter(rule => rule.level === level).map(rule => element('li', rule.label)));
   catalog.append(element('h3', label), list);
 }
+function renderHistory() {
+  const turn = game.log.length;
+  const content = byId('history-record');
+  if (!turn) {
+    content.replaceChildren(element('p', 'ยังไม่มีการลงไพ่'));
+    return;
+  }
+
+  const record = game.log.at(-1);
+  const rejected = !record.accepted && !record.trade;
+  const item = element('article', '', 'history-entry');
+  const heading = element('div', '', 'history-entry-heading');
+  const status = record.trade ? 'ขอเปลี่ยนไพ่' : rejected ? 'ไม่ผ่านกฎ' : 'ผ่านกฎ';
+  const statusStyle = record.trade ? 'trade' : rejected ? 'rejected' : 'accepted';
+  heading.append(
+    element('strong', record.name),
+    element('span', status, 'history-status ' + statusStyle),
+    element('small', `ตา ${turn} · ${record.cards.length} ใบ`, 'history-meta'),
+  );
+  item.append(heading);
+  if (record.trade || rejected) item.append(element('p', record.text, 'history-note'));
+  const faces = element('div', '', 'log-cards');
+  if (record.played) faces.append(element('p', 'ไพ่ที่ผู้คุมกฎลงให้'), cardFace(record.played));
+  if (record.trade) faces.append(element('p', 'ไพ่ที่เปิดตอนขอเปลี่ยน'));
+  faces.append(...record.cards.map(card => cardFace(card)));
+  item.append(faces);
+  content.replaceChildren(item);
+}
+
 byId('toggle-history').addEventListener('click', event => {
   const log = byId('log');
   log.hidden = !log.hidden;
@@ -256,14 +282,34 @@ function renderResult(title, actions) {
   title.textContent = matchOver
     ? `${winners.join(' และ ')} ${winners.length > 1 ? 'ชนะร่วมกัน' : 'ชนะทั้งเกม'}`
     : `${game.winner} ไขกฎสำเร็จ!`;
-  const scores = element('ul');
-  for (const [index, seat] of game.players.entries()) {
-    const change = seat.roundScore > 0 ? `+${seat.roundScore}` : seat.roundScore;
-    const detail = index === game.keeper ? 'ผู้คุมกฎ' : `เหลือ ${seat.count ?? seat.hand.length} ใบ`;
-    scores.append(element('li', `${seat.name} · ${detail} · รอบนี้ ${change} · รวม ${seat.score} คะแนน`));
+  const rule = element('p', '', 'result-rule');
+  rule.append(element('span', 'กฎลับ'), element('strong', game.rule.label));
+  if (matchOver) actions.append(element('p', `${game.winner} ทายกฎลับถูกในรอบสุดท้าย`));
+
+  const scores = element('table', '', 'scoreboard');
+  const header = scores.createTHead().insertRow();
+  for (const label of ['ผู้เล่น', 'รอบนี้', 'คะแนนรวม']) {
+    const cell = element('th', label);
+    cell.scope = 'col';
+    header.append(cell);
   }
-  actions.append(element('p', game.rule.label, 'answer'), scores);
-  if (matchOver) actions.prepend(element('p', `${game.winner} ทายกฎลับถูกในรอบสุดท้าย`));
+  const ranked = [...game.players].sort((a, b) => b.score - a.score);
+  const rows = scores.createTBody();
+  for (const seat of ranked) {
+    const row = rows.insertRow();
+    const name = element('th');
+    name.scope = 'row';
+    const rank = ranked.findIndex(other => other.score === seat.score) + 1;
+    const detail = seat === game.players[game.keeper] ? 'ผู้คุมกฎ' : `เหลือ ${seat.count ?? seat.hand.length} ใบ`;
+    name.append(element('strong', `${rank}. ${seat.name}`), element('small', detail));
+    const change = seat.roundScore > 0 ? `+${seat.roundScore}` : String(seat.roundScore);
+    const tone = seat.roundScore > 0 ? 'gain' : seat.roundScore < 0 ? 'loss' : 'neutral';
+    const delta = row.insertCell();
+    delta.append(element('span', change, `score-delta ${tone}`));
+    row.insertCell().textContent = seat.score;
+    row.prepend(name);
+  }
+  actions.append(rule, scores);
 
   const label = matchOver ? 'เริ่มเกมใหม่' : 'เริ่มรอบถัดไป';
   if (remote && !remote.host) {
@@ -280,24 +326,59 @@ function renderResult(title, actions) {
   }
 }
 
+function renderKeeperSetup(actions) {
+  if (!game.rule) {
+    actions.append(element('h3', 'เลือกกฎลับ 1 จาก 3 ใบ'));
+    const options = element('div', '', 'options keeper-options');
+    const available = remote ? remote.setup.rules : game.ruleOptions;
+    for (const rule of available) {
+      options.append(button(rule.label, () => {
+        if (remote) sendAction('choose-rule', {ruleId: rule.id});
+        else {
+          selectRule(game, rule.id);
+          render();
+        }
+      }));
+    }
+    actions.append(options);
+    return;
+  }
+
+  const cards = remote ? remote.setup.cards : clueOptions(game);
+  const reference = remote ? remote.setup.reference : game.rule.level === 2;
+  actions.append(element('p', game.rule.label, 'secret-rule'),
+    element('h3', `เลือกไพ่ตั้งต้นจากกองจั่ว (${cards.length} ใบ)`),
+    element('p', reference ? 'กฎนี้เทียบกับใบก่อนหน้า ไพ่ที่เลือกจะเป็นใบอ้างอิง' : 'แสดงเฉพาะไพ่ที่ผ่านกฎลับ', 'hand-hint'),
+    element('p', 'กดไพ่ 1 ใบเพื่อเปิดให้ทุกคนเห็นและเริ่มรอบ', 'hand-hint'));
+  const tray = element('div', '', 'hand clue-picker');
+  tray.append(...cards.map(card => cardFace(card, false, cardId => {
+    if (remote) sendAction('begin', {cardId});
+    else {
+      beginRound(game, cardId);
+      endTurn('');
+    }
+  })));
+  actions.append(tray);
+}
+
 function renderOnlineActions(title, actions, player, keeper) {
   const isKeeper = remote.me === game.keeper;
 
   if (isKeeper) {
     title.textContent = 'คุณเป็นผู้คุมกฎ';
-    actions.append(element('p', game.rule.label, 'secret-rule'));
     if (game.phase === 'keeper') {
-      actions.append(button('เปิดไพ่ตั้งต้นและเริ่มรอบ', () => sendAction('begin'), true));
-    } else if (!remote.pending) {
+      renderKeeperSetup(actions);
+      return;
+    }
+    actions.append(element('p', game.rule.label, 'secret-rule'));
+    if (!remote.pending) {
       actions.append(element('p', `รอ ${player.name}`));
     } else if (remote.pending.guess !== undefined) {
       const choice = game.choices.find(rule => rule.id === remote.pending.guess);
       actions.append(element('p', `${player.name} เลือก “${choice.label}”`),
         button('ยืนยันผลการทาย', () => sendAction('resolve'), true));
     } else {
-      const {cards, passing, trade} = remote.pending;
-      const tray = element('div', '', 'hand');
-      tray.append(...cards.map(card => cardFace(card)));
+      const {passing} = remote.pending;
       const controls = element('div', '', 'controls');
       if (passing.length) {
         passing.forEach(card => {
@@ -305,10 +386,10 @@ function renderOnlineActions(title, actions, player, keeper) {
           controls.append(button(label, () => sendAction('resolve', {pick: card.id}), true));
         });
       } else {
-        controls.append(button(trade ? 'ยืนยันว่าไม่มีไพ่ที่ผ่าน' : 'ตรวจไพ่',
+        controls.append(button(remote.submission.trade ? 'ยืนยันว่าไม่มีไพ่ที่ผ่าน' : 'ตรวจไพ่',
           () => sendAction('resolve'), true));
       }
-      actions.append(tray, controls);
+      actions.append(controls);
     }
     return;
   }

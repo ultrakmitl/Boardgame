@@ -1,5 +1,5 @@
 import {randomBytes} from 'node:crypto';
-import {startGame, beginRound, playTurn, guessRule} from '../public/know-rules.js';
+import {startGame, selectRule, clueOptions, beginRound, playTurn, guessRule} from '../public/know-rules.js';
 
 const rooms = new Map();
 const reject = () => { throw Error('คำสั่งนี้ใช้ไม่ได้ในตอนนี้'); };
@@ -49,9 +49,13 @@ function act(room, me, input) {
       room.game = startGame(room.seats.map(seat => seat.name));
       room.notice = '';
       break;
+    case 'choose-rule':
+      if (game?.phase !== 'keeper' || me !== game.keeper) reject();
+      selectRule(game, input.ruleId);
+      break;
     case 'begin':
       if (game?.phase !== 'keeper' || me !== game.keeper) reject();
-      beginRound(game);
+      beginRound(game, input.cardId);
       break;
     case 'play':
     case 'trade':
@@ -107,23 +111,30 @@ function view(room, me) {
     matchWinners: game.matchWinners,
     clue: game.phase === 'keeper' ? null : game.clue,
     log: game.log,
-    rule: keeper || game.phase === 'finished' ? {label: game.rule.label} : null,
+    rule: game.rule && (keeper || game.phase === 'finished') ? {label: game.rule.label} : null,
     choices: guessing ? game.choices.map(({id, label}) => ({id, label})) : [],
     players: game.players.map(({name, hand, score, roundScore}, index) => ({
       name, score, roundScore, count: hand.length, hand: me === index ? hand : [],
     })),
   };
+  if (keeper && game.phase === 'keeper') {
+    state.setup = game.rule
+      ? {cards: clueOptions(game), reference: game.rule.level === 2}
+      : {rules: game.ruleOptions.map(({id, label}) => ({id, label}))};
+  }
   state.waiting = Boolean(pending);
-  if (keeper && pending) {
-    if (pending.guess !== undefined) {
-      state.pending = {guess: pending.guess};
-    } else {
+  if (pending) {
+    if (pending.guess === undefined) {
       const hand = game.players[game.turn].hand;
       const cards = pending.trade ? hand : pending.ids.map(id => hand.find(card => card.id === id));
-      state.pending = {
-        trade: pending.trade, cards,
-        passing: pending.trade ? cards.filter(card => game.rule.matches(card, game.last)) : [],
-      };
+      state.submission = {trade: pending.trade, cards};
+      if (keeper) {
+        state.pending = {
+          passing: pending.trade ? cards.filter(card => game.rule.matches(card, game.last)) : [],
+        };
+      }
+    } else if (keeper) {
+      state.pending = {guess: pending.guess};
     }
   }
   return state;

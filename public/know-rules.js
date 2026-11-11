@@ -100,24 +100,47 @@ export function startGame(names, previous = null) {
   const round = previous ? previous.round + 1 : 1;
 
   const usedRuleIds = previous?.usedRuleIds ?? [];
-  const [rule] = shuffle(rules.filter(candidate => !usedRuleIds.includes(candidate.id)));
-  const draw = shuffle(deck);
-  // A comparison rule begins with a neutral reference card.
-  const clueIndex = rule.level === 2 ? 0 : draw.findIndex(card => rule.matches(card));
-  const [clue] = draw.splice(clueIndex, 1);
+  const ruleOptions = shuffle(rules.filter(candidate => !usedRuleIds.includes(candidate.id))).slice(0, 3);
   return {
     players: names.map((name, index) => ({
-      name, hand: index === keeper ? [] : draw.splice(0, 7),
+      name, hand: [],
       score: previous?.players[index]?.score ?? 0, roundScore: 0,
     })),
-    rule, choices: [], keeper, round, usedRuleIds: [...usedRuleIds, rule.id],
-    draw, discard: [], clue, last: clue, log: [],
+    rule: null, ruleOptions, choices: [], keeper, round, usedRuleIds,
+    draw: shuffle(deck), discard: [], clue: null, last: null, log: [],
     turn: (keeper + 1) % names.length, phase: 'keeper', winner: null, matchWinners: [],
   };
 }
 
-export function beginRound(game) {
-  if (game.phase === 'keeper') game.phase = 'play';
+export function selectRule(game, ruleId) {
+  const rule = game.ruleOptions.find(option => option.id === ruleId);
+  if (game.phase !== 'keeper' || game.rule || !rule) throw Error('เลือกกฎจากตัวเลือกของรอบนี้');
+
+  const dealCount = (game.players.length - 1) * 7;
+  const qualifies = card => rule.level === 2 || rule.matches(card);
+  if (!game.draw.slice(dealCount).some(qualifies)) {
+    const index = game.draw.findIndex(qualifies);
+    [game.draw[index], game.draw[dealCount]] = [game.draw[dealCount], game.draw[index]];
+  }
+  for (const [index, player] of game.players.entries()) {
+    if (index !== game.keeper) player.hand = game.draw.splice(0, 7);
+  }
+  game.rule = rule;
+  game.usedRuleIds = [...game.usedRuleIds, rule.id];
+}
+
+export function clueOptions(game) {
+  if (game.phase !== 'keeper' || !game.rule) return [];
+  return game.draw.filter(card => game.rule.level === 2 || game.rule.matches(card))
+    .sort((a, b) => a.id - b.id);
+}
+
+export function beginRound(game, cardId) {
+  if (!clueOptions(game).some(card => card.id === cardId)) throw Error('เลือกไพ่ตั้งต้นที่ใช้ได้จากกองจั่ว');
+  const index = game.draw.findIndex(card => card.id === cardId);
+  [game.clue] = game.draw.splice(index, 1);
+  game.last = game.clue;
+  game.phase = 'play';
 }
 
 export function playTurn(game, ids, trade = false, keeperPick = null) {

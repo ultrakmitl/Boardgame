@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ใครไม่รู้ · I Know… You Don’t</title>
-  <link rel="stylesheet" href="/know.css?v=7">
-  <script type="module" src="/know.js?v=8"></script>
+  <link rel="stylesheet" href="/know.css?v=12">
+  <script type="module" src="/know.js?v=13"></script>
 </head>
 <body>
   <header><a href="/">← โต๊ะเกม</a><button id="help" type="button">วิธีเล่น</button></header>
@@ -63,16 +63,22 @@
         </section>
         <section class="history" id="history" aria-labelledby="history-title">
           <div class="history-heading">
-            <h2 id="history-title">ประวัติการลงไพ่</h2>
+            <h2 id="history-title">ผลตาล่าสุด</h2>
             <button id="toggle-history" type="button" aria-controls="log" aria-expanded="true">ซ่อนประวัติ</button>
           </div>
-          <div id="log"></div>
+          <div id="log">
+            <div id="history-record" aria-live="polite"></div>
+          </div>
         </section>
         </aside>
         <div class="game-table">
         <section class="board" id="board" aria-labelledby="clue-title">
           <div class="board-heading"><h2 id="clue-title">ไพ่ที่ผ่านกฎ</h2><span id="clue-count"></span></div>
           <div id="last" class="clue-line" tabindex="0" aria-label="แนวไพ่จากใบตั้งต้นถึงใบล่าสุด"></div>
+          <div class="submission" id="submission" hidden>
+            <p id="submission-title" role="status"></p>
+            <div id="submission-cards" class="clue-line"></div>
+          </div>
         </section>
         <section class="turn"><h2 id="turn-title" tabindex="-1"></h2><p id="notice" role="status"></p><div id="actions"></div></section>
         </div>
@@ -82,7 +88,7 @@
   <dialog id="instructions">
     <h2>วิธีเล่น</h2>
     <ol>
-      <li>แต่ละรอบมีผู้คุมกฎ 1 คน เปิดกฎลับดูคนเดียว ผู้เล่นที่เหลือได้ไพ่คนละ 7 ใบ กฎที่เทียบกับใบก่อนหน้าใช้ไพ่ตั้งต้นเป็นใบอ้างอิง เมื่อเริ่มรอบถัดไปจะเปลี่ยนผู้คุมกฎตามลำดับและสุ่มกฎที่ยังไม่เคยใช้ในเกมนี้จากทุกหมวด</li>
+      <li>แต่ละรอบผู้คุมเลือกกฎลับ 1 จาก 3 ใบที่สุ่มจากกฎที่ยังไม่เคยใช้ในเกมนี้ ผู้เล่นคนอื่นได้ไพ่คนละ 7 ใบ แล้วผู้คุมเลือกไพ่ตั้งต้นที่ผ่านกฎจากกองจั่ว ถ้ากฎเทียบกับใบก่อนหน้า ให้เลือกใบใดก็ได้เป็นใบอ้างอิง รอบถัดไปหมุนผู้คุมตามลำดับ</li>
       <li>เมื่อถึงตา เลือกไพ่ตามลำดับที่อยากลง แล้วส่งให้ผู้คุมกฎตรวจ หากมีใบใดไม่ผ่านจะได้ไพ่คืนทั้งหมด</li>
       <li>ถ้าคิดว่าไม่มีไพ่ที่ผ่าน ให้ขอเปลี่ยนไพ่ทั้งมือ ถ้าคิดถูกจะได้ไพ่ใหม่ลดลง 1 ใบ ถ้ามีไพ่ที่ผ่าน ผู้คุมกฎจะเลือกลงให้ 1 ใบและจั่วมาทดแทน</li>
       <li>คนแรกที่ไพ่หมดได้เลือกกฎลับจาก 3 ตัวเลือก ตอบผิดส่งสิทธิ์ให้คนถัดไป คนแรกที่ตอบถูกได้ 1 คะแนนและจบรอบ</li>
