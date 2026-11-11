@@ -13,10 +13,10 @@ const assets = new Map(Object.entries({
   '/games/skull':'skull.html','/skull.css':'skull.css','/skull.js':'skull.js',
   '/skull-online.css':'skull-online.css',
   '/boss-online.js':'boss-online.js','/boss-online.css':'boss-online.css','/boss-rules.js':'boss-rules.js',
-  '/assets/machu.jpg':'assets/machu.jpg',
-  '/assets/incan-gold-cover.png':'assets/incan-gold-cover.png'
+  '/assets/machu.jpg':'assets/machu.jpg'
 }));
-const types = {html:'text/html; charset=utf-8',js:'text/javascript; charset=utf-8',css:'text/css; charset=utf-8',jpg:'image/jpeg',png:'image/png'};
+const types = {html:'text/html; charset=utf-8',js:'text/javascript; charset=utf-8',css:'text/css; charset=utf-8',jpg:'image/jpeg',png:'image/png',webp:'image/webp'};
+const incanArtwork = /^\/assets\/incan\/(?:cover|lobby|treasure|hazard|artifact)\.webp$/;
 const bossArtwork = /^\/assets\/boss\/(?:cards\/[a-z]+(?:-[a-z]+)?(?:-v2)?|investors\/investor-[a-z]+|deals\/deal-(?:0[1-9]|1[0-5])-(?:front|back))\.png$/;
 const skullArtwork = /^\/assets\/skull\/(?:cover|set-[1-6])\.png$/;
 function send(res,status,value) {
@@ -63,7 +63,8 @@ export const server = createServer(async (req,res)=>{
     return res.end();
   }
   const file = assets.get(url.pathname) ??
-    (bossArtwork.test(url.pathname) || skullArtwork.test(url.pathname) ? url.pathname.slice(1) : undefined);
+    (incanArtwork.test(url.pathname) || bossArtwork.test(url.pathname) || skullArtwork.test(url.pathname) ?
+      url.pathname.slice(1) : undefined);
   if (file && req.method==='GET') {
     try {
       const bytes = await readFile(new URL('./public/'+file,import.meta.url));

@@ -52,6 +52,12 @@ test('three independent sessions use one invite, reload and finish five rounds',
   const {data:host} = await request('/api/enter',{name:'หนึ่ง',create:true});
   const invite = '/games/incan-gold?room='+host.code;
   assert.match(await (await fetch(base)).text(), /href="\/games\/incan-gold"/);
+  for (const name of ['cover','lobby','treasure','hazard','artifact']) {
+    const asset = await fetch(base+'/assets/incan/'+name+'.webp');
+    assert.equal(asset.status,200);
+    assert.equal(asset.headers.get('content-type'),'image/webp');
+    await asset.arrayBuffer();
+  }
   assert.match(await (await fetch(base+invite)).text(), /id="entry"/);
   assert.equal((await fetch(base+'/?room='+host.code)).url,base+invite);
   const sessions = [host];
