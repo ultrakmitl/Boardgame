@@ -24,7 +24,7 @@ function startRound(room, turn) {
   room.winner = null;
   room.log = [];
   for (const p of room.players) {
-    Object.assign(p, {hand:[room.pile.pop()], played:[], alive:true, shield:false, secret:''});
+    Object.assign(p, {hand:[room.pile.pop()], played:[], alive:true, shield:false, secret:'', secretRank:undefined});
   }
   room.reserve = room.pile.pop();
   room.open = room.players.length === 2 ? [room.pile.pop(), room.pile.pop()] : [];
@@ -89,6 +89,7 @@ function play(room, actor, index) {
       [actor.hand, king.hand] = [king.hand, actor.hand];
       const message = actor.name + ' สลับไพ่กับ ' + king.name + ' ด้วยพลังแพนด้าแดง';
       actor.secret = king.secret = message;
+      actor.secretRank = king.secretRank = undefined;
     }
   }
   if (rank === 10) eliminate(room, actor);
@@ -121,8 +122,10 @@ function resolveEffect(room, actor, input) {
     if (rank === 3) {
       const [own] = actor.hand;
       const [other] = target.hand;
-      actor.secret = 'ดวลกับ ' + target.name + ' · ไพ่ของอีกฝ่าย ' + other;
-      target.secret = 'ดวลกับ ' + actor.name + ' · ไพ่ของอีกฝ่าย ' + own;
+      actor.secret = 'ดวลกับ ' + target.name;
+      actor.secretRank = other;
+      target.secret = 'ดวลกับ ' + actor.name;
+      target.secretRank = own;
       if (own !== other) eliminate(room, own < other ? actor : target);
       else log(room, actor.name + ' ดวลกับ ' + target.name + ' แล้วเสมอ');
     }
@@ -194,7 +197,7 @@ export function petsRoom(code, authorization, input) {
   return {
     code, self, version:room.version, phase:room.phase, turn:room.turn, round:room.round,
     winner:room.winner, goal:goal(room), pile:room.pile?.length, open:room.open, log:room.log,
-    hand:player.hand, secret:player.secret, effect:yourEffect,
+    hand:player.hand, secret:player.secret, secretRank:player.secretRank, effect:yourEffect,
     peek:yourEffect === 2 ? room.pile.at(-1) : yourEffect === 6 ? room.reserve : undefined,
     targets:yourEffect === null ? [] : eligible(room, player).map(p => room.players.indexOf(p)),
     players:room.players.map(p => ({name:p.name, score:p.score, alive:p.alive,

@@ -19,12 +19,16 @@ const escape = value => String(value).replace(/[&<>"']/g, c => ({
   '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;',
 })[c]);
 
+function cardArt(rank, count) {
+  return `<div class="card-art" style="--x:${rank % 4 * 100 / 3}%;--y:${Math.floor(rank / 4) * 50}%">
+    <strong class="rank">${rank}</strong>${count ? `<span class="count">${count} ใบ</span>` : ''}
+  </div>`;
+}
+
 function card(rank, action = '', reference = false) {
   const [name, count, detail] = cards[rank];
   return `<article class="card">
-    <div class="card-art" style="--x:${rank % 4 * 100 / 3}%;--y:${Math.floor(rank / 4) * 50}%">
-      <strong class="rank">${rank}</strong>${reference ? `<span class="count">${count} ใบ</span>` : ''}
-    </div>
+    ${cardArt(rank, reference ? count : undefined)}
     <div class="card-text"><h3>${name}</h3><p>${detail}</p>${action}</div>
   </article>`;
 }
@@ -60,7 +64,10 @@ async function request(path, input, token) {
 const roomPath = () => '/api/pets/room?code=' + encodeURIComponent(session.code);
 const actionButton = (action, label, extra = '') =>
   `<button type="button" class="primary" data-action="${action}" ${extra}>${label}</button>`;
-const rankPill = rank => `<span class="pill" title="${cards[rank][0]}">${rank}</span>`;
+const miniCard = rank => `<figure class="card mini-card">${cardArt(rank)}
+  <figcaption>${cards[rank][0]}</figcaption></figure>`;
+const cardRow = (label, ranks) => `<div class="card-row" aria-label="${label}">
+  <p>${label}</p><div class="played">${ranks.map(miniCard).join('')}</div></div>`;
 
 function effectControls(s) {
   if (s.effect === null) return '';
@@ -72,9 +79,11 @@ function effectControls(s) {
   if (s.effect === 2) {
     const positions = Array.from({length:s.pile}, (_, i) =>
       `<option value="${i}">${i === 0 ? 'บนสุด' : i === s.pile - 1 ? 'ล่างสุด' : 'ลำดับที่ ' + (i + 1) + ' จากบน'}</option>`);
-    return `<div class="effect"><h3>ไพ่บนสุดคือ ${s.peek} · ${cards[s.peek][0]}</h3>
-      <label>วางกลับที่<select id="position">${positions.join('')}</select></label>
-      ${actionButton('effect','ใส่ไพ่กลับกอง')}</div>`;
+    return `<div class="effect"><h3>ไพ่บนสุด · เฉพาะคุณ</h3>
+      <div class="peek-layout"><div>${card(s.peek)}</div>
+        <div><label>วางกลับที่<select id="position">${positions.join('')}</select></label>
+        ${actionButton('effect','ใส่ไพ่กลับกอง')}</div>
+      </div></div>`;
   }
   const targets = s.targets.map(i => `<option value="${i}">${escape(s.players[i].name)}</option>`).join('');
   const guesses = cards.map(([name], rank) => rank === 1 ? '' : `<option value="${rank}">${rank} · ${name}</option>`).join('');
@@ -103,8 +112,8 @@ function render(s) {
     <span>★ ${p.score}/${s.goal}</span>
     ${p.shield ? '<span class="tag">มีโล่</span>' : ''}
     ${p.alive === false ? '<span class="tag">ตกรอบ</span>' : ''}
-    ${p.reveal !== undefined ? `<p>ไพ่จบรอบ ${rankPill(p.reveal)}</p>` : ''}
-    ${p.played?.length ? `<div class="played" aria-label="ไพ่ที่เปิดแล้ว">${p.played.map(rankPill).join('')}</div>` : ''}
+    ${p.reveal !== undefined ? cardRow('ไพ่จบรอบ', [p.reveal]) : ''}
+    ${p.played?.length ? cardRow('ไพ่ที่เปิดแล้ว', p.played) : ''}
   </li>`).join('');
   table.innerHTML = `
     <div class="room-bar">
@@ -115,14 +124,15 @@ function render(s) {
     <div class="felt">
       <p class="meta">${lobby ? s.players.length + '/6 คน' : 'รอบ ' + s.round + ' · กองจั่ว ' + s.pile + ' ใบ'}</p>
       <h1 aria-live="polite">${status}</h1>
-      ${s.open?.length ? `<p>ไพ่ที่กันไว้แบบเปิด ${s.open.map(rankPill).join(' ')}</p>` : ''}
+      ${s.open?.length ? cardRow('ไพ่ที่กันไว้แบบเปิด', s.open) : ''}
       <ul class="seats">${seats}</ul>
       ${lobby && s.self === 0 ? `<p>${actionButton('start','เริ่มเกม',s.players.length < 2 ? 'disabled' : '')}</p>` : ''}
       ${myTurn && s.phase === 'draw' ? `<p>${actionButton('draw','จั่วไพ่')}</p>` : ''}
       ${s.phase === 'result' ? `<p>${actionButton('next','เล่นรอบถัดไป')}</p>` : ''}
       ${s.phase === 'over' ? '<p><a href="/games/power-hungry-pets">กลับไปสร้างห้องใหม่</a></p>' : ''}
     </div>
-    ${s.secret ? `<p class="private">เฉพาะคุณ · ${escape(s.secret)}</p>` : ''}
+    ${s.secret ? `<div class="private"><p>เฉพาะคุณ · ${escape(s.secret)}</p>
+      ${s.secretRank !== undefined ? cardRow('ไพ่ของอีกฝ่าย', [s.secretRank]) : ''}</div>` : ''}
     ${s.hand?.length && !finished ? `<section class="hand-area"><h2>ไพ่ในมือคุณ</h2><div class="hand">
       ${s.hand.map((rank,i) => card(rank, myTurn && s.phase === 'play' ? actionButton('play','ลงใบนี้',`data-index="${i}"`) : '')).join('')}
     </div></section>` : ''}

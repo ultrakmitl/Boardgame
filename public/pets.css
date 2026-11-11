@@ -102,17 +102,12 @@ input, select { width: 100%; min-width: 0; }
 .seat p { margin: 0; }
 .seat.current { background: var(--sun); }
 .tag { font-size: .8rem; font-weight: 700; }
-.played { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
-.pill {
-  display: inline-grid;
-  place-items: center;
-  min-width: 1.75em;
-  min-height: 1.75em;
-  background: var(--ink);
-  color: var(--cream);
-  border-radius: .35em;
-  font-weight: 700;
-}
+.card-row { margin: .35rem 0; }
+.card-row p { margin: 0 0 .35rem; font-size: .8rem; font-weight: 700; }
+.played { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.card.mini-card { width: 76px; margin: 0; border-radius: 8px; }
+.mini-card .rank { top: 3px; left: 3px; font-size: .85rem; }
+.mini-card figcaption { padding: .2rem; font-size: .72rem; line-height: 1.25; text-align: center; }
 .hand, .catalog { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0, 200px)); }
 .catalog { grid-template-columns: repeat(auto-fit, minmax(min(100%, 148px), 1fr)); }
 .card {
@@ -144,9 +139,15 @@ input, select { width: 100%; min-width: 0; }
 .card-text p { flex: 1; font-size: .9rem; }
 .card-text button { width: 100%; }
 .private, .effect, .history { background: var(--cream); padding: .85rem 1rem; border: 1px solid var(--ink); border-radius: 12px; }
+.private { margin-top: 1rem; }
+.private > p { margin-top: 0; }
+.private .played { justify-content: flex-start; }
 .effect, .history { margin: 1rem 0; }
 .effect h3 { margin-top: 0; }
 .effect label { max-width: 300px; margin-bottom: .75rem; }
+.peek-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem; }
+.peek-layout > :first-child { width: min(100%, 180px); }
+.peek-layout > :last-child { flex: 1 1 170px; }
 summary { cursor: pointer; font-weight: 700; }
 dialog {
   width: min(800px, calc(100% - 24px));
