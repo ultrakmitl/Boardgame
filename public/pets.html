@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ศึกป่วนก๊วนต้าวเหมียว | Power Hungry Pets</title>
+  <link rel="stylesheet" href="/pets.css">
+  <script type="module" src="/pets.js"></script>
+</head>
+<body>
+  <header class="nav">
+    <a href="/">‹ โต๊ะเกม</a>
+    <div><button type="button" data-dialog="rules">วิธีเล่น</button> <button type="button" data-dialog="catalog">ดูการ์ด</button></div>
+  </header>
+  <main>
+    <section id="welcome" class="welcome">
+      <div class="intro">
+        <p class="subtitle">Power Hungry Pets</p>
+        <h1>ศึกป่วนก๊วน<br>ต้าวเหมียว</h1>
+        <p>จั่วหนึ่ง ลงหนึ่ง แล้วเก็บไพ่ที่จะพาคุณชนะ</p>
+        <form id="entry">
+          <label>ชื่อเล่น<input name="name" required maxlength="24" autocomplete="nickname" placeholder="ชื่อที่เพื่อนจะเห็น"></label>
+          <label>รหัสห้อง<input name="code" maxlength="6" placeholder="กรอกเมื่อจะเข้าห้องเพื่อน" autocapitalize="characters"></label>
+          <div class="buttons"><button name="create" class="primary">สร้างห้อง</button><button name="join">เข้าห้อง</button></div>
+        </form>
+        <p class="meta">2–6 คน · ประมาณ 15 นาที</p>
+      </div>
+      <div class="poster"><img src="/assets/pets/cover.png" alt="แก๊งแมวสามตัวล้อมวงเล่นไพ่"></div>
+    </section>
+    <p id="error" role="alert" hidden></p>
+    <section id="table" hidden aria-label="โต๊ะเล่นเกม"></section>
+  </main>
+  <dialog id="rules">
+    <form method="dialog"><button aria-label="ปิด">✕</button></form>
+    <h2>วิธีเล่น</h2>
+    <ol>
+      <li>สร้างห้องแล้วแชร์รหัสให้เพื่อน 2–6 คนรวมเจ้าของห้อง เริ่มรอบด้วยไพ่คนละ 1 ใบ กองจั่วกันไพ่คว่ำ 1 ใบ และเปิดกันอีก 2 ใบเมื่อเล่น 2 คน</li>
+      <li>ถึงตาคุณให้จั่ว 1 ใบ แล้วเลือกลง 1 ใบและทำตามพลังบนไพ่ ไพ่ที่ลงแล้วจะเปิดไว้หน้าเจ้าของให้ทุกคนดูได้</li>
+      <li>ถ้าตกรอบ ให้เปิดไพ่ในมือและรอรอบถัดไป คนที่เหลือเพียงคนเดียวชนะทันที ถ้ากองจั่วหมด ให้เปิดไพ่ในมือหลังทำพลังใบสุดท้ายเสร็จ คนถือเลขสูงสุดชนะ เว้นแต่ 0 เจอ 10 ในมือคู่แข่ง ซึ่ง 0 ชนะ</li>
+      <li>ถ้าไพ่ในมือเสมอกัน ให้เทียบใบที่เลขสูงสุดในกองไพ่หน้าแต่ละคน ถ้ายังเสมอ เวอร์ชันนี้เริ่มรอบใหม่โดยไม่ให้แต้ม</li>
+      <li>ชนะรอบละ 1 โทเคน เล่น 2–3 คนต้องได้ 3 โทเคน เล่น 4–6 คนต้องได้ 2 โทเคน</li>
+    </ol>
+    <p><strong>ตัวอย่าง</strong> คุณถือ 8 แล้วจั่วได้ 1 ลองลง 1 เพื่อเดาไพ่คู่แข่ง แล้วเก็บ 8 ไว้ลุ้นตอนจบรอบ</p>
+    <p><a href="https://cdn.shopify.com/s/files/1/0345/9180/1483/files/EK_Power-Hunger-Pets_Instructions_2024.pdf?v=1736273389" target="_blank" rel="noopener">คู่มือต้นฉบับ (PDF)</a> · <a href="https://www.explodingkittens.com/products/power-hungry-pets" target="_blank" rel="noopener">วิดีโอสอนเล่นจาก Exploding Kittens</a></p>
+  </dialog>
+  <dialog id="catalog">
+    <form method="dialog"><button aria-label="ปิด">✕</button></form>
+    <h2>ไพ่ 21 ใบ</h2>
+    <div id="catalog-cards" class="catalog"></div>
+  </dialog>
+</body>
+</html>

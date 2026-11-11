@@ -4,10 +4,14 @@ import {readFile} from 'node:fs/promises';
 import {start,nextRound,resolve,view} from './src/game.mjs';
 import {bossEnter,bossRoom,maintainBossRooms} from './src/boss-game.mjs';
 import {skullEnter,skullRoom,maintainSkullRooms} from './src/skull-game.mjs';
+import {petsEnter,petsRoom,maintainPetsRooms} from './src/pets-game.mjs';
 
 const rooms = new Map();
 const token = () => randomBytes(24).toString('base64url');
 const assets = new Map(Object.entries({
+  '/games/power-hungry-pets':'pets.html','/pets.js':'pets.js','/pets.css':'pets.css',
+  '/pets-cards.js':'pets-cards.js','/assets/pets/characters.png':'assets/pets/characters.png',
+  '/assets/pets/cover.png':'assets/pets/cover.png',
   '/':'hub.html','/games/incan-gold':'index.html','/app.js':'app.js','/style.css':'style.css',
   '/games/im-the-boss':'boss-online.html','/games/im-the-boss/demo':'boss.html',
   '/games/skull':'skull.html','/skull.css':'skull.css','/skull.js':'skull.js',
@@ -73,6 +77,12 @@ export const server = createServer(async (req,res)=>{
     } catch { return send(res,404,{error:'ไม่พบไฟล์'}); }
   }
   try {
+    if (url.pathname==='/api/pets/enter' && req.method==='POST') return send(res,200,petsEnter(await body(req)));
+    if (url.pathname==='/api/pets/room' && ['GET','POST'].includes(req.method)) {
+      const input=req.method==='POST' ? await body(req) : null;
+      const state=petsRoom(url.searchParams.get('code'),req.headers.authorization,input);
+      return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
+    }
     if (url.pathname==='/api/skull/enter' && req.method==='POST') return send(res,200,skullEnter(await body(req)));
     if (url.pathname==='/api/skull/room' && ['GET','POST'].includes(req.method)) {
       const input=req.method==='POST' ? await body(req) : null;
@@ -113,6 +123,7 @@ setInterval(()=>{
   const now = Date.now();
   maintainBossRooms(now);
   maintainSkullRooms(now);
+  maintainPetsRooms(now);
   for (const [code,room] of rooms) {
     if (now-room.updated>3600000) { rooms.delete(code); continue; }
     const host = room.players.find(p=>p.id===room.host);
