@@ -44,6 +44,11 @@ function newRound(room) {
       delete player.loss;
     }
   }
+  const active = live(room);
+  room.order = [
+    ...active.filter(player => player.id >= room.starter),
+    ...active.filter(player => player.id < room.starter),
+  ].map(player => player.id);
   Object.assign(room, {phase:'setup', setupRevision:room.revision, turn:null, bid:0, bidder:null, opened:0, passed:new Set(), message:''});
 }
 
@@ -171,7 +176,7 @@ export function skullRoom(code, authorization, input) {
   const lobby = room.phase === 'lobby';
   return {
     code, phase:room.phase, revision:room.revision, me:player.id, host:0,
-    round:room.round, turn:room.turn, starter:room.starter, bid:room.bid, bidder:room.bidder,
+    round:room.round, order:lobby ? [] : room.order, turn:room.turn, starter:room.starter, bid:room.bid, bidder:room.bidder,
     opened:room.opened, message:room.message, total:lobby ? 0 : total(room),
     hand:lobby ? [] : player.hand, canPlace:!lobby && canPlace(room, player),
     targets:lobby ? [] : targets(room, player),

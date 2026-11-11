@@ -35,6 +35,11 @@ h1 { margin: 0; color: var(--gold); font: bold clamp(2.7rem, 6vw, 4rem)/.95 Geor
 .seat.active { border-color: var(--gold); background: #130c1866; }
 .seat.eliminated .discs { opacity: .45; }
 .seat h2 { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 5px; font-size: 1rem; margin: 4px 0 0; }
+.seat-order {
+  display: inline-grid; place-items: center;
+  min-width: 1.45rem; height: 1.45rem; border-radius: 50%;
+  background: var(--gold); color: var(--ink); font-size: .78rem;
+}
 .seat p { margin: 2px 0 0; font-size: .76rem; color: var(--muted); }
 .seat-counts {
   display: flex; justify-content: center; gap: clamp(4px, 1vw, 12px);
@@ -72,6 +77,9 @@ h1 { margin: 0; color: var(--gold); font: bold clamp(2.7rem, 6vw, 4rem)/.95 Geor
   text-align: center; border-block: 1px solid #d1a58160;
 }
 #round { color: var(--gold); font-size: .83rem; }
+.round-summary { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
+.table-total { padding: 3px 9px; border-radius: 6px; background: var(--ink); font-size: .85rem; }
+.table-total strong { color: var(--gold); font-size: 1rem; font-variant-numeric: tabular-nums; }
 #status { margin: 6px auto 0; max-width: 48ch; min-height: 1.55em; font-size: clamp(.95rem, 2.3vw, 1.18rem); font-weight: 700; }
 .player-area {
   display: grid; grid-template-columns: minmax(150px, .8fr) minmax(0, 2fr);

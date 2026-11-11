@@ -181,6 +181,12 @@ function seat(player) {
     pile.append(disc);
   });
   const name = element('h2', mine ? player.name + ' (คุณ)' : player.name);
+  const order = state.order.indexOf(player.id);
+  if (order >= 0) {
+    const badge = element('span', order + 1, 'seat-order');
+    badge.setAttribute('aria-label', 'ลำดับเล่นที่ ' + (order + 1));
+    name.prepend(badge);
+  }
   if (active) name.append(element('span', 'กำลังเล่น', 'turn-label'));
   const counts = element('div', null, 'seat-counts');
   for (const [number, label] of [[player.pile.length, 'วางแล้ว'], [player.handCount, 'เหลือในมือ']]) {
@@ -207,8 +213,9 @@ function gameStatus() {
 }
 
 function faceButtons(cards, verb, action) {
-  for (const face of new Set(cards)) {
+  for (const face of ['flower', 'skull']) {
     const count = cards.filter(card => card === face).length;
+    if (!count) continue;
     $('actions').append(button(`${verb}${faceNames[face]} (${count})`, () => send(action, {face})));
   }
 }
@@ -217,7 +224,8 @@ function renderGame() {
   const {players, me, host, turn, phase, hand, round, bid, total, starter} = state;
   $('opponents').replaceChildren(...players.filter(player => player.id !== me).map(seat));
   $('you').replaceChildren(seat(players[me]));
-  $('round').textContent = `รอบที่ ${round} · ${total} แผ่นบนโต๊ะ`;
+  $('round').textContent = `รอบที่ ${round}`;
+  $('table-total').textContent = total;
   $('status').textContent = gameStatus();
   const actions = $('actions');
   actions.replaceChildren();
