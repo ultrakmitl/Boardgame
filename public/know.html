@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ใครไม่รู้ · I Know… You Don’t</title>
+  <link rel="stylesheet" href="/know.css?v=4">
+  <script type="module" src="/know.js?v=4"></script>
+</head>
+<body>
+  <header><a href="/">← โต๊ะเกม</a><button id="help" type="button">วิธีเล่น</button></header>
+  <main>
+    <section id="lobby" class="lobby">
+      <div class="intro">
+        <p class="english">I Know… You Don’t</p>
+        <h1>ใครไม่รู้<span>?</span></h1>
+        <p>ลองลงไพ่ ดูว่าใบไหนผ่าน แล้วไขกฎลับก่อนเพื่อน</p>
+        <div class="stats">3–7 คน <span>·</span> เล่นออนไลน์ · สุ่มจาก 60 กฎ</div>
+        <form id="online-setup">
+          <label>ชื่อเล่น <input id="online-name" required maxlength="24" autocomplete="nickname"></label>
+          <label>รหัสห้อง <input id="room-code" maxlength="8" autocomplete="off" spellcheck="false"></label>
+          <div class="controls">
+            <button class="primary" type="submit" value="join">เข้าห้อง</button>
+            <button type="submit" value="create">สร้างห้องใหม่</button>
+          </div>
+        </form>
+        <details class="local-mode">
+          <summary>เล่นบนเครื่องเดียว</summary>
+          <form id="setup">
+          <label>ชื่อผู้เล่น <small>หนึ่งชื่อต่อบรรทัด</small>
+            <textarea id="names" rows="3" required>ผู้เล่น 1
+ผู้เล่น 2
+ผู้เล่น 3</textarea>
+          </label>
+          <p id="error" role="alert" hidden></p>
+          <button class="primary" type="submit">เริ่มเกม →</button>
+        </form>
+        </details>
+      </div>
+      <img class="poster" src="/assets/know/animals-cutout.png" alt="ภาพวาดหมู หมา กา และไก่">
+    </section>
+    <p id="connection" role="status" hidden></p>
+    <section id="online-room" hidden>
+      <div class="table-head"><strong id="room-label"></strong><div class="controls">
+        <a id="invite-link">ลิงก์เชิญ</a>
+        <button type="button" id="copy-invite">คัดลอกลิงก์</button>
+        <button type="button" id="disconnect">ออกจากห้อง</button>
+      </div></div>
+      <div id="waiting-room" class="turn" hidden>
+        <h2>รอเพื่อนเข้าห้อง</h2>
+        <div id="waiting-seats" class="players"></div>
+        <p id="waiting-note"></p>
+        <button id="start-online" class="primary" type="button" hidden>เริ่มเกม</button>
+      </div>
+    </section>
+    <section id="game" hidden>
+      <div class="table-head"><div><p id="round" class="round"></p><h1>ใครไม่รู้<span>?</span></h1></div><button id="leave" type="button">กลับหน้าเริ่ม</button></div>
+      <div id="players" class="players" aria-label="จำนวนไพ่ของผู้เล่น"></div>
+      <div class="board" id="board">
+        <section class="clue"><h2 id="clue-title">แนวไพ่ที่ผ่าน</h2><div id="last" class="clue-line" tabindex="0" aria-label="แนวไพ่จากใบตั้งต้นถึงใบล่าสุด"></div></section>
+        <section class="history"><h2>ผลการลงไพ่</h2><div id="log"></div></section>
+      </div>
+      <section class="turn"><h2 id="turn-title" tabindex="-1"></h2><p id="notice" role="status"></p><div id="actions"></div></section>
+    </section>
+  </main>
+  <dialog id="instructions">
+    <h2>วิธีเล่น</h2>
+    <ol>
+      <li>แต่ละรอบมีผู้คุมกฎ 1 คน เปิดกฎลับดูคนเดียว ผู้เล่นที่เหลือได้ไพ่คนละ 7 ใบ กฎที่เทียบกับใบก่อนหน้าใช้ไพ่ตั้งต้นเป็นใบอ้างอิง เมื่อเริ่มรอบถัดไปจะเปลี่ยนผู้คุมกฎตามลำดับและสุ่มกฎใหม่จากทุกหมวด</li>
+      <li>เมื่อถึงตา เลือกไพ่ตามลำดับที่อยากลง แล้วส่งให้ผู้คุมกฎตรวจ หากมีใบใดไม่ผ่านจะได้ไพ่คืนทั้งหมด</li>
+      <li>ถ้าคิดว่าไม่มีไพ่ที่ผ่าน ให้ขอเปลี่ยนไพ่ทั้งมือ ถ้าคิดถูกจะได้ไพ่ใหม่ลดลง 1 ใบ ถ้ามีไพ่ที่ผ่าน ผู้คุมกฎจะเลือกลงให้ 1 ใบและจั่วมาทดแทน</li>
+      <li>คนแรกที่ไพ่หมดได้เลือกกฎลับจาก 3 ตัวเลือก ตอบถูกชนะทันที ตอบผิดส่งสิทธิ์ให้คนถัดไป</li>
+    </ol>
+    <details><summary>ดูรายการการ์ดกฎทั้งหมด (ก่อนเริ่มเกม)</summary><div id="rule-list"></div></details>
+    <form method="dialog"><button class="primary">ปิด</button></form>
+  </dialog>
+</body>
+</html>

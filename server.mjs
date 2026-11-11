@@ -5,6 +5,7 @@ import {start,nextRound,resolve,view} from './src/game.mjs';
 import {bossEnter,bossRoom,maintainBossRooms} from './src/boss-game.mjs';
 import {skullEnter,skullRoom,maintainSkullRooms} from './src/skull-game.mjs';
 import {petsEnter,petsRoom,maintainPetsRooms} from './src/pets-game.mjs';
+import {knowEnter,knowRoom,maintainKnowRooms} from './src/know-online.mjs';
 
 const rooms = new Map();
 const token = () => randomBytes(24).toString('base64url');
@@ -14,6 +15,10 @@ const assets = new Map(Object.entries({
   '/assets/pets/cover.png':'assets/pets/cover.png',
   '/':'hub.html','/games/incan-gold':'index.html','/app.js':'app.js','/style.css':'style.css',
   '/games/im-the-boss':'boss-online.html','/games/im-the-boss/demo':'boss.html',
+  '/games/i-know-you-dont':'know.html','/know.js':'know.js','/know.css':'know.css',
+  '/know-rules.js':'know-rules.js',
+  '/assets/know/animals-cutout.png':'assets/know/animals-cutout.png',
+  '/assets/know/cover.png':'assets/know/cover.png',
   '/games/skull':'skull.html','/skull.css':'skull.css','/skull.js':'skull.js',
   '/skull-online.css':'skull-online.css',
   '/boss-online.js':'boss-online.js','/boss-online.css':'boss-online.css','/boss-rules.js':'boss-rules.js',
@@ -77,6 +82,12 @@ export const server = createServer(async (req,res)=>{
     } catch { return send(res,404,{error:'ไม่พบไฟล์'}); }
   }
   try {
+    if (url.pathname==='/api/know/enter' && req.method==='POST') return send(res,200,knowEnter(await body(req)));
+    if (url.pathname==='/api/know/room' && ['GET','POST'].includes(req.method)) {
+      const input = req.method==='POST' ? await body(req) : null;
+      const state = knowRoom(url.searchParams.get('code'),req.headers.authorization,input);
+      return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
+    }
     if (url.pathname==='/api/pets/enter' && req.method==='POST') return send(res,200,petsEnter(await body(req)));
     if (url.pathname==='/api/pets/room' && ['GET','POST'].includes(req.method)) {
       const input=req.method==='POST' ? await body(req) : null;
@@ -124,6 +135,7 @@ setInterval(()=>{
   maintainBossRooms(now);
   maintainSkullRooms(now);
   maintainPetsRooms(now);
+  maintainKnowRooms(now);
   for (const [code,room] of rooms) {
     if (now-room.updated>3600000) { rooms.delete(code); continue; }
     const host = room.players.find(p=>p.id===room.host);
