@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {deck, rules, startGame, beginRound, playTurn, guessRule} from '../public/know-rules.js';
+import {animals, colors, deck, rules, startGame, beginRound, playTurn, guessRule} from '../public/know-rules.js';
+
+test('each animal and rank comes in all three colors exactly once', () => {
+  assert.equal(animals.length, 4);
+  assert.equal(colors.length, 3);
+  assert.equal(new Set(deck.map(card => card.id)).size, 72);
+  for (const animal of animals.keys()) {
+    for (let number = 1; number <= 6; number++) {
+      const variants = deck.filter(card => card.animal === animal && card.number === number);
+      assert.deepEqual(variants.map(card => card.color).sort(), [0, 1, 2]);
+    }
+  }
+});
 
 test('each rule has distinct outcomes, with passing and failing cards for every reference', () => {
   assert.equal(deck.length, 72);
@@ -81,4 +93,42 @@ test('every rule can be drawn on the first round', t => {
     assert.equal(startGame(['A', 'B', 'C']).rule, rule);
     mock.mock.restore();
   }
+});
+
+test('all players tied for most cards lose a point, including the correct guesser', () => {
+  const game = startGame(['Keeper', 'First guess', 'Correct guess', 'Other']);
+  game.phase = 'guess';
+  game.choices = [game.rule];
+  game.turn = 2;
+  game.players[1].hand = [];
+  game.players[2].hand = deck.slice(0, 4);
+  game.players[3].hand = deck.slice(4, 8);
+
+  guessRule(game, game.rule.id);
+  guessRule(game, game.rule.id);
+
+  assert.equal(game.winner, 'Correct guess');
+  assert.deepEqual(game.players.map(player => player.roundScore), [0, 0, 0, -1]);
+  assert.deepEqual(game.players.map(player => player.score), [0, 0, 0, -1]);
+  assert.deepEqual(game.matchWinners, []);
+});
+
+test('scores carry over one full keeper rotation and tied leaders share the win', () => {
+  const names = ['A', 'B', 'C'];
+  let game = startGame(names);
+  for (let round = 1; round <= names.length; round++) {
+    game.phase = 'guess';
+    game.choices = [game.rule];
+    game.players[game.turn].hand = [];
+    guessRule(game, game.rule.id);
+
+    if (round < names.length) {
+      assert.deepEqual(game.matchWinners, []);
+      game = startGame(names, game);
+    }
+  }
+
+  assert.deepEqual(game.players.map(player => player.score), [0, 0, 0]);
+  assert.deepEqual(game.matchWinners, names);
+  assert.deepEqual(startGame(names).players.map(player => player.score), [0, 0, 0]);
 });

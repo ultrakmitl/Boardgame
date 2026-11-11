@@ -40,8 +40,13 @@ function act(room, me, input) {
       room.game = startGame(room.seats.map(seat => seat.name));
       break;
     case 'next':
-      if (me !== 0 || game?.phase !== 'finished') reject();
+      if (me !== 0 || game?.phase !== 'finished' || game.matchWinners.length) reject();
       room.game = startGame(room.seats.map(seat => seat.name), game);
+      room.notice = '';
+      break;
+    case 'rematch':
+      if (me !== 0 || !game?.matchWinners.length) reject();
+      room.game = startGame(room.seats.map(seat => seat.name));
       room.notice = '';
       break;
     case 'begin':
@@ -99,12 +104,13 @@ function view(room, me) {
   const guessing = game.phase === 'guess' && (me === game.turn || keeper);
   state.game = {
     round: game.round, phase: game.phase, keeper: game.keeper, turn: game.turn, winner: game.winner,
+    matchWinners: game.matchWinners,
     clue: game.phase === 'keeper' ? null : game.clue,
     log: game.log,
     rule: keeper || game.phase === 'finished' ? {label: game.rule.label} : null,
     choices: guessing ? game.choices.map(({id, label}) => ({id, label})) : [],
-    players: game.players.map(({name, hand}, index) => ({
-      name, count: hand.length, hand: me === index ? hand : [],
+    players: game.players.map(({name, hand, score, roundScore}, index) => ({
+      name, score, roundScore, count: hand.length, hand: me === index ? hand : [],
     })),
   };
   state.waiting = Boolean(pending);

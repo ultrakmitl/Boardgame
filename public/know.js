@@ -27,18 +27,18 @@ function button(text, onClick, primary = false) {
 }
 
 function cardFace(card, interactive = false) {
-  const label = `สี${colors[card.color]} เลข ${card.number} ${card.animals.map(i => animals[i]).join(' ')}`;
+  const label = `สี${colors[card.color]} เลข ${card.number} ${animals[card.animal]}`;
   const face = element(interactive ? 'button' : 'div', '', `card color-${card.color}`);
   face.setAttribute('aria-label', label);
   const top = element('span', String(card.number), 'rank');
   top.append(element('small', colors[card.color]));
-  const figures = element('span', '', 'figures');
-  for (const animal of card.animals) {
-    const figure = element('span', '', `animal animal-${animal}`);
+  const figures = element('span', '', 'figures figures-' + card.number);
+  for (let copy = 0; copy < card.number; copy++) {
+    const figure = element('span', '', `animal animal-${card.animal}`);
     figures.append(figure);
   }
   figures.setAttribute('aria-hidden', 'true');
-  face.append(top, figures, element('small', card.animals.map(i => animals[i]).join(' · '), 'species'));
+  face.append(top, figures, element('small', animals[card.animal], 'species'));
   if (interactive) {
     face.type = 'button';
     face.addEventListener('click', () => {
@@ -65,10 +65,11 @@ function updateSelection() {
 function render(focus = true) {
   const player = game.players[game.turn];
   const keeper = game.players[game.keeper];
-  byId('round').textContent = `รอบ ${game.round}`;
+  byId('round').textContent = `รอบ ${game.round} / ${game.players.length}`;
   byId('board').hidden = game.phase === 'keeper';
   byId('players').replaceChildren(...game.players.map((seat, index) =>
-    element('span', `${seat.name} · ${seat.hand.length} ใบ`, index === game.turn ? 'current' : ''),
+    element('span', `${seat.name} · ${seat.score} คะแนน · ${index === game.keeper ? 'ผู้คุมกฎ' : `${seat.count ?? seat.hand.length} ใบ`}`,
+      index === game.keeper ? 'keeper' : index === game.turn ? 'current' : ''),
   ));
   const trail = game.phase === 'keeper' ? [] : [game.clue, ...game.log.flatMap(record =>
     record.played ? [record.played] : record.accepted && !record.trade ? record.cards : [],
@@ -99,11 +100,10 @@ function render(focus = true) {
   const actions = byId('actions');
   actions.replaceChildren();
   byId('notice').textContent = feedback;
-  if (remote) {
+  if (game.phase === 'finished') {
+    renderResult(title, actions);
+  } else if (remote) {
     renderOnlineActions(title, actions, player, keeper);
-  } else if (game.phase === 'finished') {
-    title.textContent = `${game.winner} ไขกฎสำเร็จ!`;
-    actions.append(element('p', game.rule.label, 'answer'), button('เริ่มรอบถัดไป', () => { game = startGame(game.players.map(seat => seat.name), game); endTurn(''); }, true));
   } else if (game.phase === 'keeper' || pending) {
     title.textContent = open ? `${keeper.name} · ผู้คุมกฎ` : `ส่งเครื่องให้ ${keeper.name}`;
     if (!open) {
@@ -130,7 +130,7 @@ function render(focus = true) {
           const passing = candidates.filter(card => game.rule.matches(card, game.last));
           if (passing.length) {
             passing.forEach(card => {
-              const label = `ลง ${colors[card.color]} ${card.number} · ${card.animals.map(i => animals[i]).join(' ')}`;
+              const label = `ลง ${colors[card.color]} ${card.number} · ${animals[card.animal]}`;
               controls.append(button(label, () => resolvePlay(card.id), true));
             });
           } else {
@@ -235,15 +235,38 @@ byId('help').addEventListener('click', () => {
   byId('instructions').showModal();
 });
 
+function renderResult(title, actions) {
+  const winners = game.matchWinners;
+  const matchOver = winners.length > 0;
+  title.textContent = matchOver
+    ? `${winners.join(' และ ')} ${winners.length > 1 ? 'ชนะร่วมกัน' : 'ชนะทั้งเกม'}`
+    : `${game.winner} ไขกฎสำเร็จ!`;
+  const scores = element('ul');
+  for (const [index, seat] of game.players.entries()) {
+    const change = seat.roundScore > 0 ? `+${seat.roundScore}` : seat.roundScore;
+    const detail = index === game.keeper ? 'ผู้คุมกฎ' : `เหลือ ${seat.count ?? seat.hand.length} ใบ`;
+    scores.append(element('li', `${seat.name} · ${detail} · รอบนี้ ${change} · รวม ${seat.score} คะแนน`));
+  }
+  actions.append(element('p', game.rule.label, 'answer'), scores);
+  if (matchOver) actions.prepend(element('p', `${game.winner} ทายกฎลับถูกในรอบสุดท้าย`));
+
+  const label = matchOver ? 'เริ่มเกมใหม่' : 'เริ่มรอบถัดไป';
+  if (remote && !remote.host) {
+    actions.append(element('p', `รอเจ้าของห้อง${label}`));
+  } else {
+    actions.append(button(label, () => {
+      if (remote) {
+        sendAction(matchOver ? 'rematch' : 'next');
+      } else {
+        game = startGame(game.players.map(seat => seat.name), matchOver ? null : game);
+        endTurn('');
+      }
+    }, true));
+  }
+}
+
 function renderOnlineActions(title, actions, player, keeper) {
   const isKeeper = remote.me === game.keeper;
-  if (game.phase === 'finished') {
-    title.textContent = `${game.winner} ไขกฎสำเร็จ!`;
-    actions.append(element('p', game.rule.label, 'answer'));
-    if (remote.host) actions.append(button('เริ่มรอบถัดไป', () => sendAction('next'), true));
-    else actions.append(element('p', 'รอเจ้าของห้องเริ่มรอบถัดไป'));
-    return;
-  }
 
   if (isKeeper) {
     title.textContent = 'คุณเป็นผู้คุมกฎ';
@@ -263,7 +286,7 @@ function renderOnlineActions(title, actions, player, keeper) {
       const controls = element('div', '', 'controls');
       if (passing.length) {
         passing.forEach(card => {
-          const label = `ลง ${colors[card.color]} ${card.number} · ${card.animals.map(i => animals[i]).join(' ')}`;
+          const label = `ลง ${colors[card.color]} ${card.number} · ${animals[card.animal]}`;
           controls.append(button(label, () => sendAction('resolve', {pick: card.id}), true));
         });
       } else {

@@ -1,22 +1,20 @@
 export const animals = ['หมู', 'หมา', 'กา', 'ไก่'];
-export const colors = ['ชมพู', 'เหลือง', 'ฟ้า', 'เขียว'];
+export const colors = ['ชมพู', 'เหลือง', 'ฟ้า'];
 
 export const deck = colors.flatMap((_, color) =>
-  Array.from({length: 18}, (_, slot) => {
-    const mask = 1 + (slot + color * 4) % 15;
-    return {
-      id: color * 18 + slot,
+  animals.flatMap((_, animal) =>
+    Array.from({length: 6}, (_, rank) => ({
+      id: color * 24 + animal * 6 + rank,
       color,
-      number: 1 + (slot + color * 2) % 6,
-      animals: animals.map((_, index) => index).filter(index => mask & (1 << index)),
-    };
-  }),
+      number: rank + 1,
+      animal,
+    })),
+  ),
 );
 
-const has = (card, animal) => card.animals.includes(animal);
-const bird = card => has(card, 2) || has(card, 3);
-const mammal = card => has(card, 0) || has(card, 1);
-const shared = (card, previous) => card.animals.filter(animal => has(previous, animal)).length;
+const has = (card, animal) => card.animal === animal;
+const bird = card => card.animal >= 2;
+const mammal = card => card.animal < 2;
 
 export const levels = ['ง่าย', 'กลาง', 'ยาก'];
 const byLevel = [
@@ -26,32 +24,33 @@ const byLevel = [
     ['เลขบนไพ่เป็นเลขคี่', card => card.number % 2 === 1],
     ['เลขบนไพ่เป็นเลขคู่', card => card.number % 2 === 0],
     ['เลขบนไพ่ไม่เกิน 3', card => card.number <= 3],
-    ['มีสัตว์อย่างน้อย 3 ชนิด', card => card.animals.length >= 3],
+    ['เลขบนไพ่คือ 1', card => card.number === 1],
     ...animals.map((name, i) => [`ไม่มี${name}`, card => !has(card, i)]),
-    ['มีสัตว์ชนิดเดียว', card => card.animals.length === 1],
-    ['มีสัตว์พอดี 2 ชนิด', card => card.animals.length === 2],
-    ['มีสัตว์ปีกอย่างน้อยหนึ่งชนิด', bird],
-    ['มีสัตว์สี่ขาอย่างน้อยหนึ่งชนิด', mammal],
+    ['เลขบนไพ่คือ 6', card => card.number === 6],
+    ['เลขบนไพ่เป็น 2 หรือ 5', card => [2, 5].includes(card.number)],
+    ['เป็นสัตว์ปีก', bird],
+    ['เป็นสัตว์สี่ขา', mammal],
+    ['เลขบนไพ่เป็น 3 หรือ 4', card => [3, 4].includes(card.number)],
   ],
   [
-    ['มีทั้งสัตว์ปีกและสัตว์สี่ขา', card => bird(card) && mammal(card)],
+    ['เป็นสัตว์ปีกบนพื้นสีฟ้า', card => bird(card) && card.color === 2],
     ['มีหมูหรือไก่อย่างน้อยหนึ่งชนิด', card => has(card, 0) || has(card, 3)],
-    ['มีกาหรือไก่เพียงชนิดเดียว', card => has(card, 2) !== has(card, 3)],
-    ['มีหมาแต่ไม่มีหมู', card => has(card, 1) && !has(card, 0)],
+    ['เป็นสัตว์ปีกและเลขไม่เกิน 3', card => bird(card) && card.number <= 3],
+    ['เป็นหมาหรือกา', card => has(card, 1) || has(card, 2)],
     ['เป็นสีฟ้าหรือมีไก่', card => card.color === 2 || has(card, 3)],
     ['เป็นสีเหลืองหรือมีหมู', card => card.color === 1 || has(card, 0)],
     ['เป็นเลขคู่หรือมีกา', card => card.number % 2 === 0 || has(card, 2)],
     ['เป็นเลขคี่หรือมีหมา', card => card.number % 2 === 1 || has(card, 1)],
     ['พื้นไพ่เป็นสีชมพูหรือเหลือง', card => card.color < 2],
-    ['จำนวนชนิดสัตว์เป็นเลขคู่', card => card.animals.length % 2 === 0],
-    ['เลขบนไพ่เท่ากับหรือมากกว่าจำนวนชนิดสัตว์', card => card.number >= card.animals.length],
-    ['จำนวนชนิดสัตว์กับเลขบนไพ่เป็นคู่ทั้งสองหรือคี่ทั้งสอง', card => card.number % 2 === card.animals.length % 2],
-    ['มีทั้งหมูและหมา', card => has(card, 0) && has(card, 1)],
-    ['มีทั้งกาและไก่', card => has(card, 2) && has(card, 3)],
-    ['มีเฉพาะสัตว์ปีก', card => !mammal(card)],
-    ['มีเฉพาะสัตว์สี่ขา', card => !bird(card)],
-    ['มีหมูหรือหมาเพียงชนิดเดียว', card => has(card, 0) !== has(card, 1)],
-    ['ไพ่สีเขียวหรือเลขไม่เกิน 3', card => card.color === 3 || card.number <= 3],
+    ['พื้นสีชมพูและเลขเป็นคู่', card => card.color === 0 && card.number % 2 === 0],
+    ['พื้นสีเหลืองและเลขตั้งแต่ 4 ขึ้นไป', card => card.color === 1 && card.number >= 4],
+    ['สัตว์ปีกต้องเป็นเลขคู่ สัตว์สี่ขาต้องเป็นเลขคี่', card => bird(card) === (card.number % 2 === 0)],
+    ['เป็นหมูและเลขไม่เกิน 3', card => has(card, 0) && card.number <= 3],
+    ['เป็นกาหรือหมู', card => has(card, 2) || has(card, 0)],
+    ['เป็นไพ่สีชมพูหรือสัตว์สี่ขา', card => card.color === 0 || mammal(card)],
+    ['เป็นไพ่สีฟ้าและเลขเป็นคี่', card => card.color === 2 && card.number % 2 === 1],
+    ['เป็นหมาหรือไก่', card => has(card, 1) || has(card, 3)],
+    ['เป็นไพ่สีฟ้าหรือเลขไม่เกิน 3', card => card.color === 2 || card.number <= 3],
     ['มีไก่และเลขเป็นคี่', card => has(card, 3) && card.number % 2 === 1],
     ['มีกาและเลขเป็นคู่', card => has(card, 2) && card.number % 2 === 0],
   ],
@@ -61,13 +60,13 @@ const byLevel = [
     ['เลขต้องต่างจากใบก่อน', (card, prev) => card.number !== prev.number],
     ['เลขต้องเป็นคู่สลับคี่กับใบก่อน', (card, prev) => card.number % 2 !== prev.number % 2],
     ['เลขต้องห่างจากใบก่อน 1 หรือ 2', (card, prev) => [1, 2].includes(Math.abs(card.number - prev.number))],
-    ['มีสัตว์ซ้ำกับใบก่อนพอดี 1 ชนิด', (card, prev) => shared(card, prev) === 1],
-    ['จำนวนชนิดสัตว์หรือเลขบนไพ่ต้องเท่ากับใบก่อน', (card, prev) => card.animals.length === prev.animals.length || card.number === prev.number],
-    ['จำนวนชนิดสัตว์ต้องต่างจากใบก่อน', (card, prev) => card.animals.length !== prev.animals.length],
-    ['มีสัตว์ปีกสลับกับไม่มีสัตว์ปีก', (card, prev) => bird(card) !== bird(prev)],
-    ['มีสัตว์สี่ขาสลับกับไม่มีสัตว์สี่ขา', (card, prev) => mammal(card) !== mammal(prev)],
+    ['สัตว์ต้องเป็นชนิดเดียวกับใบก่อน', (card, prev) => card.animal === prev.animal],
+    ['ชนิดสัตว์หรือเลขต้องเหมือนใบก่อนอย่างน้อยหนึ่งอย่าง', (card, prev) => card.animal === prev.animal || card.number === prev.number],
+    ['สัตว์ต้องต่างชนิดจากใบก่อน', (card, prev) => card.animal !== prev.animal],
+    ['สัตว์ปีกสลับกับสัตว์สี่ขา', (card, prev) => bird(card) !== bird(prev)],
+    ['สัตว์ต้องอยู่กลุ่มเดียวกับใบก่อน (สัตว์ปีกหรือสัตว์สี่ขา)', (card, prev) => bird(card) === bird(prev)],
     ['ถ้าเลขเป็นคู่ สีต้องเหมือนใบก่อน ถ้าเป็นคี่ สีต้องต่าง', (card, prev) => (card.color === prev.color) === (card.number % 2 === 0)],
-    ['สีต้องต่างจากใบก่อน และมีสัตว์ซ้ำอย่างน้อย 1 ชนิด', (card, prev) => card.color !== prev.color && shared(card, prev) >= 1],
+    ['สีต้องต่างจากใบก่อน และสัตว์ต้องเป็นชนิดเดียวกัน', (card, prev) => card.color !== prev.color && card.animal === prev.animal],
     ['เลขต้องเท่ากับใบก่อน', (card, prev) => card.number === prev.number],
     ['เลขต้องห่างจากใบก่อนพอดี 1', (card, prev) => Math.abs(card.number - prev.number) === 1],
     ['ผลรวมเลขของไพ่สองใบต้องหาร 3 ลงตัว', (card, prev) => (card.number + prev.number) % 3 === 0],
@@ -75,7 +74,7 @@ const byLevel = [
     ['เลขหรือสีต้องเหมือนใบก่อนอย่างน้อยหนึ่งอย่าง', (card, prev) => card.number === prev.number || card.color === prev.color],
     ['มีหมูสลับกับไม่มีหมู', (card, prev) => has(card, 0) !== has(prev, 0)],
     ['มีหมาสลับกับไม่มีหมา', (card, prev) => has(card, 1) !== has(prev, 1)],
-    ['จำนวนชนิดสัตว์ต้องเป็นคู่สลับคี่กับใบก่อน', (card, prev) => card.animals.length % 2 !== prev.animals.length % 2],
+    ['สีและชนิดสัตว์ต้องต่างจากใบก่อนทั้งคู่', (card, prev) => card.color !== prev.color && card.animal !== prev.animal],
   ],
 ];
 export const rules = byLevel.flatMap((entries, level) =>
@@ -106,10 +105,13 @@ export function startGame(names, previous = null) {
   const clueIndex = rule.level === 2 ? 0 : draw.findIndex(card => rule.matches(card));
   const [clue] = draw.splice(clueIndex, 1);
   return {
-    players: names.map((name, index) => ({name, hand: index === keeper ? [] : draw.splice(0, 7)})),
+    players: names.map((name, index) => ({
+      name, hand: index === keeper ? [] : draw.splice(0, 7),
+      score: previous?.players[index]?.score ?? 0, roundScore: 0,
+    })),
     rule, choices: [], keeper, round,
     draw, discard: [], clue, last: clue, log: [],
-    turn: (keeper + 1) % names.length, phase: 'keeper', winner: null,
+    turn: (keeper + 1) % names.length, phase: 'keeper', winner: null, matchWinners: [],
   };
 }
 
@@ -183,8 +185,19 @@ export function playTurn(game, ids, trade = false, keeperPick = null) {
 export function guessRule(game, id) {
   if (game.phase !== 'guess' || !game.choices.some(rule => rule.id === id)) return;
   if (game.rule.id === id) {
+    const mostCards = Math.max(...game.players.filter((_, index) => index !== game.keeper)
+      .map(player => player.hand.length));
+    for (const [index, player] of game.players.entries()) {
+      if (index === game.keeper) continue;
+      player.roundScore = Number(index === game.turn) - Number(player.hand.length === mostCards);
+      player.score += player.roundScore;
+    }
     game.winner = game.players[game.turn].name;
     game.phase = 'finished';
+    if (game.round === game.players.length) {
+      const bestScore = Math.max(...game.players.map(player => player.score));
+      game.matchWinners = game.players.filter(player => player.score === bestScore).map(player => player.name);
+    }
   } else {
     game.turn = nextGuesser(game);
   }
