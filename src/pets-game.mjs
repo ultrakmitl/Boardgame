@@ -22,6 +22,7 @@ function startRound(room, turn) {
   room.phase = 'draw';
   room.effect = null;
   room.winner = null;
+  room.latestPlay = undefined;
   room.log = [];
   for (const p of room.players) {
     Object.assign(p, {hand:[room.pile.pop()], played:[], alive:true, shield:false, secret:'', secretRank:undefined});
@@ -69,7 +70,8 @@ function finishTurn(room) {
 function play(room, actor, index) {
   const [rank] = actor.hand.splice(index, 1);
   actor.played.push(rank);
-  log(room, actor.name + ' ลง ' + rank + ' ' + cards[rank][0]);
+  room.latestPlay = {name:actor.name, rank};
+  room.log = [];
   if ([1,3,5,8].includes(rank) && eligible(room,actor).length ||
       rank === 2 && room.pile.length || rank === 6 && room.reserve !== undefined) {
     room.effect = rank;
@@ -171,7 +173,7 @@ export function petsEnter(input) {
 
 export function petsRoom(code, authorization, input) {
   const room = rooms.get(code);
-  const player = room?.players.find(p => 'Bearer ' + p.token === authorization);
+  let player = room?.players.find(p => 'Bearer ' + p.token === authorization);
   if (!player) return null;
   const self = room.players.indexOf(player);
   room.updated = Date.now();
@@ -180,6 +182,11 @@ export function petsRoom(code, authorization, input) {
     const {action} = input;
     if (action === 'start' && room.phase === 'lobby' && self === 0 && room.players.length >= 2) {
       startRound(room, randomInt(room.players.length));
+    } else if (action === 'rematch' && room.phase === 'over' && self === 0) {
+      Object.assign(room, {phase:'lobby', round:0, turn:undefined, pile:undefined,
+        reserve:undefined, open:undefined, winner:undefined, showdown:false, effect:null, latestPlay:undefined, log:[]});
+      room.players = room.players.map(({name, token}) => ({name, token, score:0}));
+      player = room.players[self];
     } else if (action === 'next' && room.phase === 'result') {
       startRound(room, room.winner ?? (room.turn + 1) % room.players.length);
     } else if (player === active(room) && room.phase === 'draw' && action === 'draw') {
@@ -196,7 +203,8 @@ export function petsRoom(code, authorization, input) {
   const finished = ['result','over'].includes(room.phase);
   return {
     code, self, version:room.version, phase:room.phase, turn:room.turn, round:room.round,
-    winner:room.winner, goal:goal(room), pile:room.pile?.length, open:room.open, log:room.log,
+    winner:room.winner, goal:goal(room), pile:room.pile?.length, open:room.open,
+    latestPlay:room.latestPlay, log:room.log,
     hand:player.hand, secret:player.secret, secretRank:player.secretRank, effect:yourEffect,
     peek:yourEffect === 2 ? room.pile.at(-1) : yourEffect === 6 ? room.reserve : undefined,
     targets:yourEffect === null ? [] : eligible(room, player).map(p => room.players.indexOf(p)),

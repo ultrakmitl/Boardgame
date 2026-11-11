@@ -72,9 +72,9 @@ const cardRow = (label, ranks) => `<div class="card-row" aria-label="${label}">
 function effectControls(s) {
   if (s.effect === null) return '';
   if (s.effect === 6) {
-    return `<div class="effect"><h3>ไพ่ที่กันไว้</h3><div class="hand">${card(s.peek)}</div>
+    return `<div class="effect"><h3>ไพ่ที่กันไว้ · เฉพาะคุณ</h3><div class="peek-layout"><div>${card(s.peek)}</div>
       <div class="buttons">${actionButton('effect','สลับไพ่','data-swap="yes"')}
-      ${actionButton('effect','เก็บไพ่เดิม','data-swap="no"')}</div></div>`;
+      ${actionButton('effect','เก็บไพ่เดิม','data-swap="no"')}</div></div></div>`;
   }
   if (s.effect === 2) {
     const positions = Array.from({length:s.pile}, (_, i) =>
@@ -95,7 +95,6 @@ function effectControls(s) {
 
 function render(s) {
   if (state && state.version >= s.version) return;
-  const historyOpen = table.querySelector('.history')?.open;
   state = s;
   byId('welcome').hidden = true;
   table.hidden = false;
@@ -113,31 +112,44 @@ function render(s) {
     ${p.shield ? '<span class="tag">มีโล่</span>' : ''}
     ${p.alive === false ? '<span class="tag">ตกรอบ</span>' : ''}
     ${p.reveal !== undefined ? cardRow('ไพ่จบรอบ', [p.reveal]) : ''}
-    ${p.played?.length ? cardRow('ไพ่ที่เปิดแล้ว', p.played) : ''}
+    ${p.played?.length ? cardRow('ไพ่ล่าสุด', p.played.slice(-1)) : ''}
   </li>`).join('');
+  byId('round-history').innerHTML = s.latestPlay
+    ? cardRow(escape(s.latestPlay.name), [s.latestPlay.rank]) +
+      (s.log.length ? `<ul>${[...s.log].reverse().map(line => `<li>${escape(line)}</li>`).join('')}</ul>` : '')
+    : '<p>ยังไม่มีไพ่ที่ลงในรอบนี้</p>';
   table.innerHTML = `
     <div class="room-bar">
       <strong>ห้อง <span class="code">${s.code}</span></strong>
-      <div><button type="button" data-action="copy">คัดลอกลิงก์เชิญ</button> <a href="/games/power-hungry-pets">ออกจากโต๊ะ</a></div>
+      <div>${s.latestPlay ? '<button type="button" data-action="history">ไพ่ล่าสุด</button> ' : ''}
+      <button type="button" data-action="copy">คัดลอกลิงก์เชิญ</button> <a href="/games/power-hungry-pets">ออกจากโต๊ะ</a></div>
     </div>
     <label id="invite" hidden>ลิงก์เชิญ<input id="invite-url" readonly value="${escape(roomLink.href)}"></label>
     <div class="felt">
       <p class="meta">${lobby ? s.players.length + '/6 คน' : 'รอบ ' + s.round + ' · กองจั่ว ' + s.pile + ' ใบ'}</p>
       <h1 aria-live="polite">${status}</h1>
-      ${s.open?.length ? cardRow('ไพ่ที่กันไว้แบบเปิด', s.open) : ''}
-      <ul class="seats">${seats}</ul>
+    </div>
+    <div class="table-layout">
+      <section class="turn-panel" aria-label="ไพ่และการเล่นของคุณ">
       ${lobby && s.self === 0 ? `<p>${actionButton('start','เริ่มเกม',s.players.length < 2 ? 'disabled' : '')}</p>` : ''}
+      ${lobby && s.self !== 0 ? '<p>รอเจ้าของห้องเริ่มเกม</p>' : ''}
       ${myTurn && s.phase === 'draw' ? `<p>${actionButton('draw','จั่วไพ่')}</p>` : ''}
       ${s.phase === 'result' ? `<p>${actionButton('next','เล่นรอบถัดไป')}</p>` : ''}
-      ${s.phase === 'over' ? '<p><a href="/games/power-hungry-pets">กลับไปสร้างห้องใหม่</a></p>' : ''}
-    </div>
-    ${s.secret ? `<div class="private"><p>เฉพาะคุณ · ${escape(s.secret)}</p>
-      ${s.secretRank !== undefined ? cardRow('ไพ่ของอีกฝ่าย', [s.secretRank]) : ''}</div>` : ''}
-    ${s.hand?.length && !finished ? `<section class="hand-area"><h2>ไพ่ในมือคุณ</h2><div class="hand">
+      ${s.phase === 'over' ? s.self === 0
+        ? `<p>${actionButton('rematch','กลับห้องเดิม')}</p>`
+        : '<p>รอเจ้าของห้องพากลับห้องเดิมเพื่อเล่นอีกเกม</p>' : ''}
+      ${effectControls(s)}
+      ${s.hand?.length && !finished ? `<section class="hand-area"><h2>ไพ่ในมือคุณ</h2><div class="hand">
       ${s.hand.map((rank,i) => card(rank, myTurn && s.phase === 'play' ? actionButton('play','ลงใบนี้',`data-index="${i}"`) : '')).join('')}
-    </div></section>` : ''}
-    ${effectControls(s)}
-    ${s.log?.length ? `<details class="history" ${historyOpen ? 'open' : ''}><summary>เหตุการณ์ในรอบนี้</summary><ol>${s.log.map(line => `<li>${escape(line)}</li>`).join('')}</ol></details>` : ''}
+      </div></section>` : ''}
+      ${s.secret ? `<details class="private"><summary>เฉพาะคุณ · ${escape(s.secret)}</summary>
+        ${s.secretRank !== undefined ? cardRow('ไพ่ของอีกฝ่าย', [s.secretRank]) : '<p>คุณสลับไพ่แล้ว ดูใบใหม่ในมือได้เลย</p>'}</details>` : ''}
+      </section>
+      <section class="table-seats" aria-label="ผู้เล่นบนโต๊ะ">
+        <ul class="seats">${seats}</ul>
+        ${s.open?.length ? cardRow('ไพ่ที่กันไว้แบบเปิด', s.open) : ''}
+      </section>
+    </div>
   `;
 }
 
@@ -165,6 +177,10 @@ table.addEventListener('click', async event => {
   const button = event.target.closest('[data-action]');
   if (!button || busy) return;
   const {action, index, swap} = button.dataset;
+  if (action === 'history') {
+    byId('history-dialog').showModal();
+    return;
+  }
   if (action === 'copy') {
     try {
       await navigator.clipboard.writeText(roomLink.href);
