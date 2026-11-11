@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skull ออนไลน์ | โต๊ะเกม</title>
+  <link rel="stylesheet" href="/skull.css">
+  <link rel="stylesheet" href="/skull-online.css">
+  <script type="module" src="/skull.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="back-link" href="/">← โต๊ะเกม</a>
+      <div class="header-actions">
+        <button id="show-rules" class="quiet" aria-haspopup="dialog">วิธีเล่น</button>
+      </div>
+    </header>
+    <section class="title" id="room-heading" hidden>
+      <h1>Skull</h1>
+      <p id="room-label">เล่นออนไลน์กับเพื่อน 3–6 คน</p>
+    </section>
+    <p id="notice" role="status"></p>
+    <section id="entry-view" class="entry-view" aria-labelledby="entry-title">
+      <div class="entry-cover">
+        <div class="cover-discs" aria-hidden="true"><span></span><span></span><span></span></div>
+        <h1 id="entry-title">Skull</h1>
+        <p>เกมบลัฟออนไลน์สำหรับ 3–6 คน</p>
+      </div>
+      <form id="entry" class="room-panel" aria-labelledby="entry-form-title">
+        <h2 id="entry-form-title">เล่นกับเพื่อน</h2>
+        <label>ชื่อเล่น <input name="name" maxlength="24" required autocomplete="nickname" placeholder="ชื่อที่เพื่อนจะเห็น"></label>
+        <label for="entry-code">รหัสห้อง</label>
+        <div class="join-row">
+          <input id="entry-code" name="code" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="กรอกรหัสห้อง">
+          <button value="join">เข้าห้อง</button>
+        </div>
+        <div class="create-row"><button value="create" class="quiet">สร้างห้องใหม่</button></div>
+      </form>
+    </section>
+    <section id="lobby" class="lobby-layout" hidden>
+      <aside class="room-panel lobby-room" aria-labelledby="lobby-title">
+        <h2 id="lobby-title">ล็อบบี้</h2>
+        <div class="invite-block">
+          <span>รหัสห้อง</span>
+          <strong id="lobby-code"></strong>
+          <button id="copy" class="quiet">คัดลอกลิงก์เชิญ</button>
+          <input id="invite" aria-label="ลิงก์เชิญ" readonly hidden>
+        </div>
+        <h3>ที่นั่งผู้เล่น <span id="seat-count"></span></h3>
+        <ul id="members" aria-label="ผู้เล่นในห้อง"></ul>
+        <p id="lobby-status" aria-live="polite"></p>
+        <button id="start" hidden>เริ่มเกม</button>
+      </aside>
+      <section class="room-panel style-panel" aria-labelledby="style-title">
+        <h2 id="style-title">เลือกชุดแผ่นของคุณ</h2>
+        <div id="styles" class="styles"></div>
+      </section>
+    </section>
+    <section id="game" class="table" aria-label="โต๊ะเล่น Skull" hidden>
+      <div id="opponents" class="opponents"></div>
+      <div class="center">
+        <div id="round"></div>
+        <p id="status" role="status"></p>
+      </div>
+      <div class="player-area">
+        <div id="you"></div>
+        <div class="controls"><div id="actions"></div></div>
+      </div>
+    </section>
+    <dialog id="rules" aria-labelledby="rules-title">
+      <h2 id="rules-title">วิธีเล่น Skull</h2>
+      <ol>
+        <li>เลือกวางแผ่นแรกแบบคว่ำคนละหนึ่งแผ่น ผู้เริ่มรอบวางเป็นคนสุดท้าย</li>
+        <li>เมื่อถึงตา เลือกวางเพิ่มหรือประมูลจำนวนดอกไม้ที่คิดว่าจะเปิดได้ คนถัดไปเสนอเพิ่มหรือผ่าน</li>
+        <li>คนที่เสนอสูงสุดต้องเปิดตามจำนวนที่เสนอ เริ่มจากกองตัวเองก่อน และเปิดแผ่นบนสุดของแต่ละกองเสมอ</li>
+        <li>เจอแต่ดอกไม้ครบตามจำนวนจะชนะรอบ เจอหัวกะโหลกจะเสียแผ่นหนึ่งแผ่น ถ้าหมดแผ่นจะตกรอบ</li>
+        <li>ชนะการท้าทาย 2 ครั้ง หรือเป็นคนสุดท้ายที่ยังมีแผ่นเหลือ จะชนะเกม</li>
+      </ol>
+      <form method="dialog"><button autofocus>กลับไปที่โต๊ะ</button></form>
+    </dialog>
+  </main>
+</body>
+</html>

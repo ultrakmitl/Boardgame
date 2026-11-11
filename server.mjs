@@ -3,18 +3,22 @@ import {randomBytes} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {start,nextRound,resolve,view} from './src/game.mjs';
 import {bossEnter,bossRoom,maintainBossRooms} from './src/boss-game.mjs';
+import {skullEnter,skullRoom,maintainSkullRooms} from './src/skull-game.mjs';
 
 const rooms = new Map();
 const token = () => randomBytes(24).toString('base64url');
 const assets = new Map(Object.entries({
   '/':'hub.html','/games/incan-gold':'index.html','/app.js':'app.js','/style.css':'style.css',
   '/games/im-the-boss':'boss-online.html','/games/im-the-boss/demo':'boss.html',
+  '/games/skull':'skull.html','/skull.css':'skull.css','/skull.js':'skull.js',
+  '/skull-online.css':'skull-online.css',
   '/boss-online.js':'boss-online.js','/boss-online.css':'boss-online.css','/boss-rules.js':'boss-rules.js',
   '/assets/machu.jpg':'assets/machu.jpg',
   '/assets/incan-gold-cover.png':'assets/incan-gold-cover.png'
 }));
 const types = {html:'text/html; charset=utf-8',js:'text/javascript; charset=utf-8',css:'text/css; charset=utf-8',jpg:'image/jpeg',png:'image/png'};
 const bossArtwork = /^\/assets\/boss\/(?:cards\/[a-z]+(?:-[a-z]+)?(?:-v2)?|investors\/investor-[a-z]+|deals\/deal-(?:0[1-9]|1[0-5])-(?:front|back))\.png$/;
+const skullArtwork = /^\/assets\/skull\/set-[1-6]\.png$/;
 function send(res,status,value) {
   res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
   res.end(JSON.stringify(value));
@@ -58,7 +62,8 @@ export const server = createServer(async (req,res)=>{
     res.writeHead(302,{Location:'/games/incan-gold'+url.search});
     return res.end();
   }
-  const file = assets.get(url.pathname) ?? (bossArtwork.test(url.pathname) ? url.pathname.slice(1) : undefined);
+  const file = assets.get(url.pathname) ??
+    (bossArtwork.test(url.pathname) || skullArtwork.test(url.pathname) ? url.pathname.slice(1) : undefined);
   if (file && req.method==='GET') {
     try {
       const bytes = await readFile(new URL('./public/'+file,import.meta.url));
@@ -67,6 +72,12 @@ export const server = createServer(async (req,res)=>{
     } catch { return send(res,404,{error:'ไม่พบไฟล์'}); }
   }
   try {
+    if (url.pathname==='/api/skull/enter' && req.method==='POST') return send(res,200,skullEnter(await body(req)));
+    if (url.pathname==='/api/skull/room' && ['GET','POST'].includes(req.method)) {
+      const input=req.method==='POST' ? await body(req) : null;
+      const state=skullRoom(url.searchParams.get('code'),req.headers.authorization,input);
+      return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
+    }
     if (url.pathname==='/api/boss/enter' && req.method==='POST') return send(res,200,bossEnter(await body(req)));
     if (url.pathname==='/api/boss/room' && ['GET','POST'].includes(req.method)) {
       const input=req.method==='POST' ? await body(req) : null;
@@ -100,6 +111,7 @@ export const server = createServer(async (req,res)=>{
 setInterval(()=>{
   const now = Date.now();
   maintainBossRooms(now);
+  maintainSkullRooms(now);
   for (const [code,room] of rooms) {
     if (now-room.updated>3600000) { rooms.delete(code); continue; }
     const host = room.players.find(p=>p.id===room.host);

@@ -21,6 +21,8 @@
     .game-tile img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; background:#293b30; }
     .incan-cover { aspect-ratio:1200/879; overflow:hidden; }
     .incan-cover img { aspect-ratio:1; transform:translateY(-13.42%); }
+    .skull-cover { display:grid; place-items:center; aspect-ratio:16/9; background:#271b39; }
+    .skull-cover::before { content:""; display:block; width:75%; aspect-ratio:2; background:url(/assets/skull/set-1.png) center top / 100% auto no-repeat; }
     .game-tile-body { flex:1; display:flex; flex-direction:column; align-items:flex-start; padding:18px; }
     .game-tile h2 { font-size:1.65rem; margin:0; line-height:1.25; overflow-wrap:anywhere; }
     .game-tile small { color:var(--gold); margin-top:.35rem; }
@@ -56,6 +58,17 @@
             <small>3–6 คน · เล่นออนไลน์</small>
             <p>รวมทีมนักลงทุน ต่อรองส่วนแบ่ง และแย่งสิทธิ์ปิดดีลกับเพื่อน</p>
             <a class="primary" href="/games/im-the-boss">เข้าเล่น I’m the Boss!</a>
+          </div>
+        </article>
+      </li>
+      <li>
+        <article class="game-tile">
+          <div class="skull-cover" aria-hidden="true"></div>
+          <div class="game-tile-body">
+            <h2>Skull</h2>
+            <small>3–6 คน · เล่นออนไลน์</small>
+            <p>วางดอกไม้หรือหัวกะโหลก แล้วประมูลว่าคุณจะเปิดดอกไม้ได้กี่แผ่น</p>
+            <a class="primary" href="/games/skull">เข้าเล่น Skull ออนไลน์</a>
           </div>
         </article>
       </li>
