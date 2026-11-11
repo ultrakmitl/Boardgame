@@ -7,9 +7,10 @@ const rooms = new Map();
 const token = () => randomBytes(24).toString('base64url');
 const assets = new Map(Object.entries({
   '/':'hub.html','/games/incan-gold':'index.html','/app.js':'app.js','/style.css':'style.css',
-  '/assets/machu.jpg':'assets/machu.jpg'
+  '/assets/machu.jpg':'assets/machu.jpg',
+  '/assets/incan-gold-cover.png':'assets/incan-gold-cover.png'
 }));
-const types = {html:'text/html; charset=utf-8',js:'text/javascript; charset=utf-8',css:'text/css; charset=utf-8',jpg:'image/jpeg'};
+const types = {html:'text/html; charset=utf-8',js:'text/javascript; charset=utf-8',css:'text/css; charset=utf-8',jpg:'image/jpeg',png:'image/png'};
 function send(res,status,value) {
   res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
   res.end(JSON.stringify(value));
