@@ -80,6 +80,29 @@ function tableInfo(s, active) {
     '<span>ภัยที่นำออก '+(removed.length ? removed.map(([name,count])=>
       '<b class="hazard-count">'+esc(name)+' '+count+' ใบ</b>').join(' ') : '<b>ยังไม่มี</b>')+'</span></div>';
 }
+function turnControls(s) {
+  const intermission = s.phase==='intermission';
+  const results = [
+    {choice:'explore',label:'สำรวจต่อ'},
+    {choice:'exit',label:'กลับแคมป์'}
+  ].map(({choice,label})=>{
+    const names = s.revealed.filter(p=>p.choice===choice).map(p=>esc(p.name));
+    return '<div class="turn-result '+choice+'"><strong>'+label+'</strong><span>'+
+      (names.join(', ') || 'ไม่มี')+'</span></div>';
+  }).join('');
+  const status = intermission || s.phase==='finished' ? esc(s.reason) :
+    !s.you.active ? 'คุณอยู่ที่แคมป์' :
+    s.you.choice ? 'เลือกแล้ว · รอผู้เล่นคนอื่น' : 'ตัดสินใจตานี้';
+  return '<section class="turn-bar" aria-label="ตัดสินใจและผลการเลือก">'+
+    '<div class="turn-row"><div class="turn-status"><strong>'+status+'</strong>'+
+    (s.phase==='playing'?'<small id="timer"></small>':'')+'</div>'+
+    (s.phase==='playing' && s.you.active && !s.you.choice ?
+      '<div class="turn-buttons"><button class="primary" data-action="explore">สำรวจต่อ</button>'+
+      '<button data-action="exit">กลับแคมป์</button></div>' :
+      intermission && s.host ? '<button class="primary" data-action="next">เริ่มรอบถัดไป</button>' : '')+
+    '</div>'+(s.revealed.length?'<div class="turn-results" aria-label="ผลการเลือกครั้งล่าสุด">'+
+      results+'</div>':'')+'</section>';
+}
 function render() {
   const s = state;
   const focus = document.activeElement?.dataset.action;
@@ -88,12 +111,12 @@ function render() {
   const active = s.players.filter(p=>p.active).length;
   const lobby = s.phase==='lobby';
   const finished = s.phase==='finished';
-  const intermission = s.phase==='intermission';
   const best = s.standings?.[0];
   const winners = best && s.standings.filter(p=>p.score===best.score && p.artifacts===best.artifacts);
   roomNode.innerHTML = '<div class="room-head"><div><span class="eyebrow">ห้อง '+s.code+'</span><h1>'+
     (lobby?'แคมป์สำรวจ':finished?'ผลการสำรวจ':'วิหารชั้น '+s.round+' / 5')+
     '</h1></div><button data-action="copy">คัดลอกลิงก์เชิญ</button></div>'+
+    (lobby?'':turnControls(s))+
     (lobby||finished?'':expedition(s.players))+
     '<div class="room-grid'+(lobby?'':' in-game')+'"><article class="panel">'+
     (lobby ? '<h2>รอคณะสำรวจ</h2><p>ส่งลิงก์หรือรหัส <strong>'+s.code+'</strong> ให้เพื่อน</p><p>เมื่อเริ่มเกม ทุกตาให้เวลา 45 วินาที หากยังไม่ได้เลือก ระบบจะพากลับแคมป์ เจ้าของห้องที่หลุดเกิน 45 วินาทีจะส่งสิทธิ์ให้ผู้เล่นที่ออนไลน์</p>' :
@@ -102,12 +125,9 @@ function render() {
       '<p class="muted">โบราณวัตถุที่เพิ่มในรอบนี้ · '+s.introduced.value+' คะแนน</p>'+
       '<div class="trail" aria-label="ไพ่บนเส้นทาง">'+s.path.map(c=>'<div class="card '+c.kind+'">'+image(c)+
         '<strong>'+(c.kind==='hazard'?'':c.value+(c.kind==='artifact'?' แต้ม':''))+'</strong><small>'+
-        (c.kind==='hazard'?c.value+(c.removed?' · ซ้ำ':''):c.kind==='treasure'?'สมบัติ':c.claimed?'เก็บแล้ว':'โบราณวัตถุ')+'</small></div>').join('')+'</div>'+
-      '<p>'+ (intermission?esc(s.reason):'<span id="timer"></span> · '+(s.you.active?(s.you.choice?'เลือกแล้ว · รอผล':'เลือกเส้นทางของคุณ'):'คุณอยู่ที่แคมป์'))+'</p>')+
+        (c.kind==='hazard'?c.value+(c.removed?' · ซ้ำ':''):c.kind==='treasure'?'สมบัติ':c.claimed?'เก็บแล้ว':'โบราณวัตถุ')+'</small></div>').join('')+'</div>')+
     '<div class="actions">'+
     (s.host && (lobby||finished)?'<button class="primary" data-action="start" '+(s.players.length<3?'disabled':'')+'>'+(finished?'เล่นอีกครั้ง':'เริ่มเกม')+'</button>':'')+
-    (intermission && s.host?'<button class="primary" data-action="next">เริ่มรอบถัดไป</button>':'')+
-    (s.phase==='playing' && s.you.active && !s.you.choice?'<button class="primary" data-action="explore">สำรวจต่อ</button><button data-action="exit">กลับแคมป์</button>':'')+
     '</div></article>'+(lobby?'<aside class="panel"><h2>คณะสำรวจ '+s.players.length+'/8</h2><ul class="players">'+
     s.players.map(p=>'<li><span>'+esc(p.name)+'</span><small>'+(p.online?'ออนไลน์':'ออฟไลน์')+'</small></li>').join('')+
     '</ul></aside>':'')+'</div>';
