@@ -18,7 +18,7 @@ const assets = new Map(Object.entries({
 }));
 const types = {html:'text/html; charset=utf-8',js:'text/javascript; charset=utf-8',css:'text/css; charset=utf-8',jpg:'image/jpeg',png:'image/png'};
 const bossArtwork = /^\/assets\/boss\/(?:cards\/[a-z]+(?:-[a-z]+)?(?:-v2)?|investors\/investor-[a-z]+|deals\/deal-(?:0[1-9]|1[0-5])-(?:front|back))\.png$/;
-const skullArtwork = /^\/assets\/skull\/set-[1-6]\.png$/;
+const skullArtwork = /^\/assets\/skull\/(?:cover|set-[1-6])\.png$/;
 function send(res,status,value) {
   res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
   res.end(JSON.stringify(value));
