@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>I’m the Boss! • โต๊ะเกม</title>
+  <link rel="stylesheet" href="/boss-online.css">
+  <script type="module" src="/boss-online.js"></script>
+</head>
+<body>
+  <header><div class="shell masthead"><a class="hub-link" href="/">← กลับโต๊ะเกม</a><strong>I’m the Boss!</strong><span id="room-label"></span></div></header>
+  <main class="shell">
+    <p id="status" role="status"></p>
+    <section class="entry" id="entry">
+      <div class="entry-art">
+        <img src="/assets/boss/cards/boardroom.png" alt="">
+        <div class="entry-caption"><span>3–6 คน · เล่นออนไลน์</span><h1>เปิดโต๊ะเจรจา</h1></div>
+      </div>
+      <form id="entry-form">
+        <h2>เข้าร่วมโต๊ะ</h2>
+        <label>ชื่อเล่น <input id="name" maxlength="24" required autocomplete="nickname" placeholder="ชื่อที่เพื่อนจะเห็น"></label>
+        <button type="button" class="primary" id="create-room">สร้างห้องใหม่</button>
+        <div class="join-room">
+          <label>รหัสห้อง <input id="code" required maxlength="8" pattern="[0-9a-fA-F]{8}" autocomplete="off" spellcheck="false" placeholder="รหัส 8 ตัว"></label>
+          <button id="join-room">เข้าห้อง</button>
+        </div>
+      </form>
+    </section>
+    <section class="lobby" id="lobby" hidden>
+      <div class="lobby-cover">
+        <img src="/assets/boss/cards/boardroom.png" alt="">
+        <div><h1>ห้องรอ</h1><p id="lobby-count"></p></div>
+      </div>
+      <div class="lobby-body">
+        <section class="lobby-players" aria-label="ที่นั่งผู้เล่น">
+          <h2>ผู้เล่น</h2><ul id="lobby-seats"></ul>
+        </section>
+        <aside class="lobby-invite">
+          <h2>ชวนเพื่อน</h2>
+          <label class="invite-label" for="invite-url">ลิงก์เข้าห้อง</label>
+          <input id="invite-url" readonly aria-label="ลิงก์เข้าห้อง">
+          <p class="invite-code">รหัสห้อง <strong id="lobby-code"></strong></p>
+          <button type="button" data-action="copy">คัดลอกลิงก์เชิญ</button>
+          <div class="lobby-start">
+            <button type="button" class="primary" id="start-room" data-action="start">เริ่มเกม</button>
+            <small id="lobby-readiness" aria-live="polite"></small>
+          </div>
+        </aside>
+      </div>
+    </section>
+    <div id="game" hidden>
+      <section id="seats" class="seats" aria-label="ผู้เล่น"></section>
+      <div class="table-layout">
+        <section id="board" class="board" aria-label="กระดาน 16 ช่อง">
+          <div id="spaces"></div>
+          <div class="board-center">
+            <div class="stock"><img id="deal-art" alt=""><strong id="dividend"></strong></div>
+            <div class="stock"><img src="/assets/boss/cards/influence-back.png" alt=""><span id="deck-count"></span></div>
+            <div class="dice-box"><span id="die" role="img" aria-label="ลูกเต๋า">⚀</span><strong id="position"></strong></div>
+          </div>
+          <span class="pawn" id="pawn" aria-hidden="true" hidden>$</span>
+        </section>
+        <section class="panel deal" id="deal" aria-label="การเจรจา"></section>
+      </div>
+      <section class="panel hand"><div class="hand-head"><h2 id="hand-title">การ์ดในมือ</h2><label><input type="checkbox" id="playable-only"> เล่นได้ตอนนี้</label></div><div id="hand"></div></section>
+      <details class="panel log" open><summary>ข้อความและบันทึกการเจรจา</summary>
+        <form id="chat-form"><input id="chat" aria-label="ข้อความเจรจา" maxlength="250" placeholder="พิมพ์คุยกับทุกคน" required><button>ส่ง</button></form>
+        <ol id="log"></ol>
+      </details>
+    </div>
+  </main>
+</body>
+</html>

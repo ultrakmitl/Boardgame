@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I'm the Boss! • โต๊ะเจรจา</title>
+<style>
+  :root{color-scheme:dark;--ink:#111c28;--panel:#1b2836;--felt:#12483f;--paper:#f3ecd9;--gold:#f4c976;--muted:#b9c7cb}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--paper);font:15px/1.55 "Leelawadee UI",Tahoma,sans-serif}
+  button,input{font:inherit}
+  button{cursor:pointer;border:1px solid #77898c;border-radius:6px;padding:9px 14px;background:#233747;color:var(--paper);font-weight:700}
+  button:hover:enabled{filter:brightness(1.18)}
+  button:disabled{opacity:.5;cursor:default}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  .gold{background:var(--gold);color:#252217;border-color:var(--gold)}
+  header{border-bottom:1px solid #3d4c56}
+  .bar,main{width:min(1160px,calc(100% - 40px));margin:auto}
+  .bar{min-height:68px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+  .brand{font-family:Georgia,serif;font-weight:bold;font-size:26px;letter-spacing:-.04em}
+  .bar span{color:var(--muted);margin-left:10px}
+  main{padding:25px 0 35px}
+  .seats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:13px}
+  .seat{background:var(--panel);border:1px solid #435461;border-radius:8px;padding:10px;display:grid;gap:8px;align-content:start;min-width:0}
+  .seat.boss{border-color:var(--gold)}
+  .seat-title{display:flex;justify-content:space-between;align-items:baseline;gap:5px;flex-wrap:wrap}
+  .investors{display:flex;gap:5px;min-width:0}
+  .investor{display:block;width:min(48%,116px);height:auto;aspect-ratio:3/2;border-radius:4px;background:#293847;object-fit:contain}
+  small,.muted{color:var(--muted)}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:13px}
+  .table{border:5px solid #725039;border-radius:20px;background:repeating-linear-gradient(125deg,#ffffff03 0 1px,transparent 1px 5px),var(--felt);padding:24px;box-shadow:inset 0 0 0 2px #0d322c}
+  .table h1{font-family:Georgia,"Leelawadee UI",serif;font-size:clamp(32px,5vw,52px);line-height:1.1;margin:3px 0 7px;letter-spacing:-.04em}
+  .deal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:18px}
+  .pot{background:var(--paper);color:#253728;padding:8px 16px;border-radius:6px;text-align:center;min-width:95px}
+  .pot b{display:block;font-family:Georgia,serif;font-size:32px;line-height:1.2}
+  .offer{border-top:1px solid #ffffff45;padding-top:10px}
+  .offer-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;margin:8px 0}
+  .offer-response{grid-column:1/-1;color:#ffe2a1;font-size:13px}
+  .offer-row .send-offer{padding:6px 9px;font-size:13px}
+  input{width:70px;background:#0b352f;color:white;border:1px solid #8aaba1;border-radius:5px;padding:6px}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+  .side{min-width:0;border:1px solid #435461;border-radius:8px;background:var(--panel)}
+  .side summary{padding:8px 12px;cursor:pointer;color:var(--muted)}
+  h2{font-size:17px;margin:0 0 10px}
+  .side ol{list-style:none;padding:0 12px;margin:0;max-height:180px;overflow:auto}
+  .side li{padding:8px 0;border-top:1px solid #435461;color:var(--muted)}
+  .hand{margin-top:20px}
+  .hand-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .hand-toolbar h2{margin:0}
+  .hand-filters{display:flex;gap:5px}
+  .hand-filters button{font-size:13px;padding:5px 9px}
+  .hand-filters button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#252217}
+  .hand-empty{grid-column:1/-1;margin:0;color:var(--muted)}
+  .play-label{color:#ffe2a1;font-size:11px;font-weight:700}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:10px}
+  .card{display:grid;align-content:start;gap:4px;text-align:left;background:#1b2836;border:1px solid #526370;border-top:3px solid var(--stripe);border-radius:7px;padding:5px;min-width:0}
+  .card img{display:block;width:100%;height:auto;aspect-ratio:2/3;border-radius:4px;background:#263849;object-fit:contain}
+  .card strong{font-size:13px}
+  .card .card-description{font-size:12px;font-weight:400;color:var(--muted)}
+  .card:disabled{opacity:1}
+  .card:disabled img{opacity:.8}
+  .card:enabled{border-color:var(--stripe);background:#293b48}
+  #message{margin:12px 0 0;min-height:24px;color:#ffe2a1}
+  .game-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+  .layout{grid-template-columns:1fr}
+  .board{display:grid;position:relative;isolation:isolate;grid-template:repeat(5,minmax(0,1fr))/repeat(5,minmax(0,1fr));aspect-ratio:1;background:#372a30;border:6px solid #67483b;border-radius:14px;overflow:hidden;box-shadow:0 9px 30px #0006}
+  #spaces{display:contents}
+  .space{grid-area:var(--row)/var(--col);margin:2px;padding:clamp(3px,1vw,9px);min-width:0;border:2px solid transparent;border-radius:5px;background:#f1e7ce;color:#242332;display:flex;flex-direction:column;justify-content:space-between;gap:2px}
+  .tile-meta{display:flex;justify-content:space-between;gap:2px;font-size:clamp(9px,1.15vw,14px);font-weight:bold}
+  .tile-teams{display:flex;flex-wrap:wrap;gap:2px}
+  .tile-group{display:flex;flex-wrap:wrap;align-items:center;gap:1px;max-width:100%;border:1px solid #8d7664;border-radius:3px;padding:1px;font-size:clamp(8px,1vw,12px);line-height:1}
+  .tile-group .chip{font-size:clamp(6px,1vw,11px);width:1.25em;height:1.25em}
+  .offer-group{border:0;border-top:1px solid #ffffff45;margin:8px 0;padding:4px 0;min-width:0}
+  .offer-group legend{padding:0 6px;color:#ffe2a1}
+  .offer-row input[type="checkbox"]{width:auto;accent-color:var(--gold);margin:0 5px 0 0}
+  .chip{display:inline-grid;place-items:center;background:var(--team);color:#161b24;border-radius:50%;width:1.45em;height:1.45em;font-size:clamp(9px,1.12vw,14px);font-weight:bold}
+  .chip svg{width:68%;height:68%;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+  .offer-row .chip{margin-right:5px;vertical-align:middle;font-size:16px}
+  .space.current{border-color:#fff6d3;background:#f6cf7d;box-shadow:inset 0 0 0 1px #6b461c}
+  .space.closed{padding:0;background:#12483f;overflow:hidden}
+  .closed-art{width:100%;height:100%;object-fit:contain;display:block}
+  .center{grid-area:2/2/5/5;display:grid;place-items:center;text-align:center;position:relative;overflow:hidden;margin:2px;border-radius:5px;background:#392b50}
+  .center .board-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45}
+  .center-ui{z-index:1;padding:8px;background:#211932ea;border:1px solid #cba76c;border-radius:10px;display:grid;justify-items:center;gap:8px;width:max-content;max-width:95%}
+  .board-tools{display:flex;align-items:center;justify-content:center;gap:clamp(5px,1.6vw,12px)}
+  .deal-placard{display:grid;justify-items:center;gap:4px;line-height:1.2;color:var(--paper)}
+  .deal-placard img{display:block;width:clamp(55px,8vw,112px);aspect-ratio:1;object-fit:contain;border-radius:4px;background:var(--paper);box-shadow:0 3px 0 #a49073}
+  .influence-back{display:block;width:clamp(32px,4.9vw,65px);aspect-ratio:2/3;border-radius:4px;background:#111c28;object-fit:contain}
+  .deal-placard span,.deal-placard strong{display:block}
+  .deal-placard span{font-size:clamp(9px,1.2vw,12px)}
+  .deal-placard strong{font-size:clamp(10px,1.65vw,17px);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .die{width:46px;aspect-ratio:1;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:7px;gap:3px;background:#fff3d5;border-radius:9px;box-shadow:0 3px 0 #a49073;color:#282035}
+  .pip{width:100%;height:100%;border-radius:50%;background:currentColor}
+  .die.rolling{animation:tumble .16s ease-in-out infinite alternate}
+  @keyframes tumble{from{transform:rotate(-24deg) translateY(-4px)}to{transform:rotate(24deg) translateY(2px)}}
+  .pawn{position:absolute;z-index:2;pointer-events:none;left:var(--x);top:var(--y);transform:translate(-105%, -50%);border:2px solid #fff4ba;border-radius:50%;width:clamp(18px,2.6vw,30px);aspect-ratio:1;display:grid;place-items:center;background:#1e5547;color:#fff4ba;font:bold clamp(12px,1.7vw,19px)/1 Georgia;box-shadow:0 2px 5px #0008;transition:left .16s ease,top .16s ease}
+  @media(prefers-reduced-motion:reduce){.pawn{transition:none}.die.rolling{animation:none}}
+  .cover{width:44px;height:44px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:9px;background:#3c2854}
+  @media(max-width:760px){.game-grid{grid-template-columns:1fr}.seats{grid-template-columns:repeat(2,1fr)}.side ol{max-height:125px}}
+  @media(max-width:460px){.bar,main{width:calc(100% - 22px)}.bar span{display:block;margin:0}.table{padding:14px}.cards{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:clamp(105px,32vw,136px);overflow-x:auto;scroll-snap-type:x proximity;padding:4px 4px 9px}.card{scroll-snap-align:start}.offer-row{grid-template-columns:1fr auto}.offer-row button{grid-column:1/-1;justify-self:start}}
+</style>
+</head>
+<body>
+<header><div class="bar"><div><img class="cover" src="https://www.eagle-gryphon.com/cdn/shop/files/102418-4_700x700.png?v=1747772532" alt=""><b class="brand">I'm the Boss!</b><span>เดโมเล่นกับบอต</span></div><button data-action="reset">เริ่มใหม่</button></div></header>
+<main>
+  <section class="seats" id="seats" aria-label="ผู้เล่น"></section>
+  <div class="game-grid">
+  <section class="board" aria-label="กระดานดีล 16 ช่อง">
+    <div id="spaces"></div>
+    <div class="center">
+      <img class="board-cover" src="https://www.eagle-gryphon.com/cdn/shop/files/102418-4_700x700.png?v=1747772532" alt="">
+      <div class="center-ui">
+        <div class="board-tools">
+          <div class="deal-placard" id="dividend" aria-live="polite"><img id="deal-art" alt=""><span id="deal-number"></span><strong id="share-value"></strong></div>
+          <img class="influence-back" id="influence-back" alt="หลังการ์ดอิทธิพล" title="หลังการ์ดอิทธิพล">
+          <div class="die" id="die" role="img" aria-label="ยังไม่ได้ทอยลูกเต๋า"></div>
+        </div>
+        <strong id="location" aria-live="polite"></strong>
+      </div>
+    </div>
+    <span class="pawn" id="pawn" aria-hidden="true">$</span>
+  </section>
+  <div class="layout">
+    <section class="table" id="table" aria-label="ดีลปัจจุบัน"></section>
+    <details class="side"><summary>บันทึกการเจรจา</summary><ol id="log"></ol></details>
+  </div>
+  </div>
+  <section class="hand" aria-labelledby="hand-title">
+    <div class="hand-toolbar">
+      <h2 id="hand-title">การ์ดในมือคุณ <span id="hand-count" aria-live="polite"></span></h2>
+      <div class="hand-filters" aria-label="กรองการ์ด">
+        <button type="button" data-action="filter" data-filter="all" id="filter-all" aria-pressed="true">ทั้งหมด</button>
+        <button type="button" data-action="filter" data-filter="playable" id="filter-playable" aria-pressed="false">เล่นได้ตอนนี้</button>
+      </div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+</main>
+<script>
+const players = ['คุณ','มิน','เจ','พลอย'];
+const teams = [
+  {shade:'เหลือง', icon:'<path d="m3 8 9-5 9 5M4 21h16M6 10v8m6-8v8m6-8v8"/>', color:'#f4c976'},
+  {shade:'ฟ้า', icon:'<path d="M9 3h6m-5 0v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M8 15h8"/>', color:'#8cd5e0'},
+  {shade:'แดง', icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="8" r="1"/><circle cx="8" cy="13" r="1"/><circle cx="16" cy="13" r="1"/>', color:'#f1a29b'},
+  {shade:'ม่วง', icon:'<path d="m4 15 10-10 5 5-10 10zm9-9 5 5M5 13l6 6"/>', color:'#c3b1eb'},
+  {shade:'ส้ม', icon:'<path d="m9 5 5-3 5 8-5 3zm3 6-8 6m10 3h8"/>', color:'#f7a768'},
+  {shade:'เขียว', icon:'<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M8 8V5h8v3M3 13h18"/>', color:'#9ac987'}
+];
+const [Y,B,R,P,O,G] = [0,1,2,3,4,5];
+const teamColors = ['yellow','blue','red','purple','orange','green'];
+const artworkRoot = (location.protocol === 'file:' ? '' : '/')+'assets/boss/';
+const art = (group,file) => artworkRoot+group+'/'+file+'.png';
+const dealArt = (number,side) => art('deals','deal-'+String(number).padStart(2,'0')+'-'+side);
+function influenceArt(card) {
+  if (card.kind === 'team') {
+    const version = [B,G].includes(card.team) ? '' : '-v2';
+    return art('cards','team-'+teamColors[card.team]+version);
+  }
+  if (card.kind === 'travel') return art('cards','travel-'+(teamColors[card.team] ?? 'wild')+'-v2');
+  return art('cards',(card.id === 'recruit' ? 'recruitment' : card.id)+'-v2');
+}
+// Clockwise from the top-left corner of the reference photo.
+const deals = [
+  [6,[1,B],[4,P,Y,R,G,O]],
+  [3,[2,R,B]],
+  [5,[4,O,R,P,G,Y]],
+  [4,[1,G,P],[2,O,B,Y]],
+  [6,[2,G,P,O],[3,B,Y,R]],
+  [4,[1,R,B],[1,G,P],[1,Y]],
+  [3,[2,O,P]],
+  [4,[3,R,O,Y,P]],
+  [6,[3,P,G,Y,O],[2,B,R]],
+  [5,[4,G,P,B,O,R,Y]],
+  [4,[3,B,O,R]],
+  [5,[2,G,B,R],[2,P,O,Y]],
+  [6,[2,P,G],[3,Y,R,B,O]],
+  [4,[2,G,P],[1,B,Y]],
+  [4,[1,Y,B],[1,P,R],[1,O,G]],
+  [3,[2,Y,G]]
+].map(([shares,...requirements],i) => {
+  const groups = requirements.map(([count,...colors]) => ({count,colors}));
+  return {name:'ช่อง '+(i+1),shares,groups,teams:groups.flatMap(group => group.colors),
+    required:groups.reduce((sum,group) => sum+group.count,0)};
+});
+const track = [[1,1],[1,2],[1,3],[1,4],[1,5],[2,5],[3,5],[4,5],[5,5],[5,4],[5,3],[5,2],[5,1],[4,1],[3,1],[2,1]];
+const cards = [
+  ...['team','travel'].flatMap(kind => teams.map((player,team) => ({
+    id:kind+'-'+team, kind, team, color:player.color,
+    title:(kind === 'team' ? 'Team' : 'Travel')+' สี'+player.shade,
+    text:(kind === 'team' ? 'ส่งตัวแทนสี' : 'ส่งป้ายนักลงทุนสี')+player.shade+(kind === 'team' ? 'เข้าดีล' : 'ออกจากดีล')
+  }))),
+  {id:'travel-wild', kind:'travel', title:'Travel สีเทา', text:'ส่งป้ายนักลงทุนสีใดก็ได้ออกจากดีล', color:'#9ba2ad'},
+  {id:'recruit', title:'Recruitment ×3', text:'ย้ายป้ายนักลงทุนมาเป็นของคุณตลอดเกม', color:'#52b9b7'},
+  {id:'boss', title:'Boss', text:'แย่งตำแหน่งบอสคืนจากมิน', color:'#db9a42'},
+  {id:'stop', title:'Stop', text:'ยกเลิก Boss หรือ Travel ที่บอตเพิ่งเล่น', color:'#c97871'}
+];
+let state;
+const get = id => document.getElementById(id);
+const current = () => {
+  const deal = deals[state.position];
+  const rate = state.rate;
+  const pot = deal.shares * rate;
+  const asks = deal.teams.map((_,i) => Math.max(1,Math.floor(pot / (deal.required + 1)) - i%2));
+  return {...deal, rate, pot, asks};
+};
+const money = value => value + ' ล้าน';
+const dollar = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',maximumFractionDigits:0});
+function teamChip(team) {
+  const color = teams[team];
+  return '<span class="chip" style="--team:'+color.color+'" title="ทีมสี'+color.shade+'" role="img" aria-label="ทีมสี'+color.shade+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+color.icon+'</svg></span>';
+}
+const log = message => state.log.unshift(message);
+const covered = i => state.proxies.has(i) || (!state.blocked.has(i) && state.owners[deals[state.position].teams[i]] === 0);
+function canTarget(card, index) {
+  const team = deals[state.position].teams[index];
+  if (!card || team === undefined || !state.hand.has(card.id)) return false;
+  if (card.team !== undefined && card.team !== team) return false;
+  if (card.kind === 'team') {
+    return !covered(index) && (state.phase === 'offer' || (state.phase === 'travel' && state.botTarget === index));
+  }
+  return state.phase === 'offer' && !state.blocked.has(index) && !state.proxies.has(index) && state.owners[team] !== 0;
+}
+const pips = [[],[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
+function showDie(face) {
+  const die = get('die');
+  die.innerHTML = pips[face].map(i => '<span class="pip" style="grid-area:'+ (Math.floor(i/3)+1) +'/'+(i%3+1)+'"></span>').join('');
+  die.setAttribute('aria-label', face ? 'ลูกเต๋า '+face+' แต้ม' : 'ยังไม่ได้ทอยลูกเต๋า');
+}
+function renderBoard() {
+  const position = state.position;
+  get('spaces').innerHTML = deals.map((space,i) => {
+    const [row,col] = track[i];
+    const closed = state.closed.get(i);
+    const active = i === position;
+    const chips = space.groups.map(({count,colors}) =>
+      '<span class="tile-group" role="group" aria-label="เลือก '+count+' ทีม">'+colors.map(teamChip).join('')+'<b>'+count+'</b></span>').join('');
+    const content = closed
+      ? '<img class="closed-art" src="'+dealArt(closed,'back')+'" alt="ปิด'+space.name+'ด้วยป้ายดีล '+closed+'">'
+      : '<div class="tile-meta"><span title="จำนวนทีมที่ต้องใช้">'+space.required+'</span><span>$ × '+space.shares+'</span></div><div class="tile-teams" role="group" aria-label="ทีมที่ต้องใช้">'+chips+'</div>';
+    return '<div class="space'+(active ? ' current' : '')+(closed ? ' closed' : '')+'" style="--row:'+row+';--col:'+col+'"'+
+      (active ? ' aria-current="location"' : '')+'>'+content+'</div>';
+  }).join('');
+  const [row,col] = track[position];
+  get('pawn').style.setProperty('--x', (col*20-1)+'%');
+  get('pawn').style.setProperty('--y', (row*20-10)+'%');
+  const location = deals[position].name;
+  if (get('location').textContent !== location) get('location').textContent = location;
+}
+function nextSpace(position) {
+  do { position = (position+1) % track.length; } while (state.closed.has(position));
+  return position;
+}
+const pause = ms => new Promise(resolve => setTimeout(resolve,ms));
+async function rollDice() {
+  const turn = state;
+  const result = Math.floor(Math.random()*6)+1;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  turn.phase = 'rolling';
+  turn.message = 'กำลังทอยลูกเต๋า';
+  render();
+  if (!reduced) {
+    get('die').classList.add('rolling');
+    for (let frame = 0; frame < 7; frame++) {
+      showDie((result+frame)%6+1);
+      await pause(85);
+      if (turn !== state) return;
+    }
+    get('die').classList.remove('rolling');
+  }
+  turn.die = result;
+  showDie(result);
+  turn.message = 'ทอยได้ '+result+' แต้ม กำลังเดิน';
+  render();
+  for (let step = 0; step < result; step++) {
+    turn.position = nextSpace(turn.position);
+    renderBoard();
+    if (!reduced) {
+      await pause(220);
+      if (turn !== state) return;
+    }
+  }
+  beginRound();
+  turn.rolled = true;
+  turn.message = 'ทอยได้ '+result+' แต้ม · ลงที่'+current().name;
+  log(turn.message);
+  render();
+  get('table').querySelector('[data-action="open"]')?.focus({preventScroll:true});
+}
+function beginRound() {
+  state.rate = 2; // Deal placards #1–#3 in this demo each pay $2M per dividend.
+  state.dealNumber = state.closed.size + 1;
+  const deal = current();
+  const selected = new Set(deal.groups.flatMap(({count,colors}) => colors.slice(0,count).map(team => deal.teams.indexOf(team))));
+  Object.assign(state, {phase:'move', rolled:false, selected, offers:deal.asks.map(ask => ask - 1), accepted:[], proxies:new Set(), blocked:new Set(), botTarget:null, picker:null, message:''});
+}
+function reset() {
+  state = {round:0, position:0, die:0, closed:new Map(), owners:[0,1,2,3,1,3], balances:[0,0,0,0], hand:new Set(cards.map(card => card.id)), handFilter:'all', log:[]};
+  get('die').classList.remove('rolling');
+  beginRound();
+}
+function offerResponse(index,deal) {
+  const reply = state.accepted[index];
+  if (!reply) return 'ยังไม่ได้ส่งข้อเสนอ';
+  if (reply.amount !== state.offers[index]) return 'แก้ยอดแล้ว · ส่งข้อเสนออีกครั้ง';
+  return reply.agreed ? 'ตกลงรับ '+money(reply.amount) : 'ขอเพิ่มเป็น '+money(deal.asks[index]);
+}
+function cardPlayable(card,deal) {
+  if (state.picker) return false;
+  if (card.id === 'boss') return state.phase === 'challenge';
+  if (card.id === 'stop') return ['challenge','travel'].includes(state.phase);
+  return deal.teams.some((_,i) => canTarget(card,i));
+}
+function renderHand(deal) {
+  const held = cards.filter(card => state.hand.has(card.id));
+  const playable = held.filter(card => cardPlayable(card,deal));
+  const ready = new Set(playable.map(card => card.id));
+  const filtered = state.handFilter === 'playable';
+  const visible = filtered ? playable : [...playable,...held.filter(card => !ready.has(card.id))];
+  const count = get('hand-count');
+  const countLabel = '· '+held.length+' ใบ';
+  if (count.textContent !== countLabel) count.textContent = countLabel;
+  get('filter-all').setAttribute('aria-pressed',String(!filtered));
+  get('filter-playable').setAttribute('aria-pressed',String(filtered));
+  get('filter-playable').textContent = 'เล่นได้ตอนนี้ ('+playable.length+')';
+  get('cards').innerHTML = visible.map(card => {
+    const active = ready.has(card.id);
+    return '<button class="card" style="--stripe:'+card.color+'" data-action="card" data-card="'+card.id+'" '+(active ? '' : 'disabled')+'>'+
+      '<img src="'+influenceArt(card)+'" alt="" loading="lazy" decoding="async"><strong>'+card.title+'</strong><span class="card-description">'+card.text+'</span>'+
+      (active ? '<span class="play-label">เล่นได้</span>' : '')+'</button>';
+  }).join('') || '<p class="hand-empty">'+(held.length ? 'ยังไม่มีการ์ดที่เล่นได้ตอนนี้' : 'ไม่มีการ์ดในมือ')+'</p>';
+}
+function render() {
+  const deal = current();
+  const challenged = state.phase === 'challenge';
+  const travelChallenge = state.phase === 'travel';
+  const ready = state.phase === 'ready';
+  const finished = state.phase === 'finished';
+  const settled = state.phase === 'settled';
+  get('seats').innerHTML = players.map((name,i) => {
+    const boss = !finished && !settled && !['move','rolling'].includes(state.phase) && i === (challenged ? 1 : 0);
+    const placards = teams.map((color,team) => state.owners[team] === i
+      ? '<img class="investor" src="'+art('investors','investor-'+teamColors[team])+'" alt="ป้ายนักลงทุนสี'+color.shade+'" title="ป้ายนักลงทุนสี'+color.shade+'">'
+      : '').join('');
+    return '<div class="seat '+(boss ? 'boss' : '')+'"><div class="seat-title"><strong>'+name+(boss ? ' · บอส' : '')+'</strong><small>'+money(state.balances[i])+'</small></div><div class="investors">'+(placards || '<small>ไม่มีป้ายทีม</small>')+'</div></div>';
+  }).join('');
+  renderBoard();
+  showDie(state.die);
+  get('deal-number').textContent = 'ป้ายดีล #'+state.dealNumber;
+  get('share-value').textContent = '$ = '+dollar.format(deal.rate * 1_000_000);
+  get('deal-art').setAttribute('src',dealArt(state.dealNumber,'front'));
+  const winner = players.filter((_,i) => state.balances[i] === Math.max(...state.balances)).join(' และ ');
+  let body;
+  if (finished) {
+    body = '<div class="muted">ปิดสำเร็จ '+state.closed.size+' จาก 3 ตา</div><h1>'+(state.closed.size ? winner+' ชนะ' : 'เสมอกันทุกคน')+'</h1><p>เงินรวมสูงสุด '+money(Math.max(...state.balances))+'</p><button class="gold" data-action="reset">เล่นอีกครั้ง</button>';
+  } else {
+    const total = offerTotal();
+    const rows = deal.groups.map(({count,colors}) => '<fieldset class="offer-group"><legend>เลือก '+count+' จาก '+colors.length+' ทีม</legend>'+
+      colors.map(id => {
+      const i = deal.teams.indexOf(id);
+      const color = teams[id];
+      const proxy = state.proxies.has(i);
+      const blocked = state.blocked.has(i) && !proxy;
+      const editable = state.phase === 'offer' && !state.picker;
+      const included = state.selected.has(i);
+      const checkbox = count < colors.length ? '<input type="checkbox" data-select-team="'+i+'" '+(included ? 'checked ' : '')+(editable ? '' : 'disabled')+'>' : '';
+      return '<div class="offer-row"><label>'+checkbox+teamChip(id)+'<strong style="color:'+color.color+'">ทีมสี'+color.shade+'</strong> · '+(proxy ? 'ตัวแทนของคุณ' : players[state.owners[id]])+'</label>'+
+        (blocked ? '<span>เดินทาง</span><span>ใช้ป้ายไม่ได้</span>' : !included ? '<span>ยังไม่เลือก</span>' : covered(i) ? '<span>0 ล้าน</span><span>เข้าดีลแล้ว</span>' : '<input id="offer'+i+'" aria-label="ส่วนแบ่งทีมสี'+color.shade+'" aria-describedby="reply'+i+'" type="number" min="0" max="'+deal.pot+'" step="1" value="'+(Number.isFinite(state.offers[i]) ? state.offers[i] : '')+'" '+(editable ? '' : 'disabled')+'>'+
+        (editable ? '<button class="send-offer" data-action="send-offer" data-team="'+i+'" aria-label="ส่งข้อเสนอให้ทีมสี'+color.shade+'">ส่งข้อเสนอ</button>' : '')+
+        '<span class="offer-response" id="reply'+i+'">'+offerResponse(i,deal)+'</span>')+
+        (canTarget(state.picker,i) ? '<button data-action="target" data-team="'+i+'">เลือกทีมนี้</button>' : '')+'</div>';
+    }).join('')+'</fieldset>').join('');
+    let actions = '';
+    if (state.phase === 'move') actions = '<button class="gold" data-action="open">เปิดเจรจา</button>'+(state.rolled ? '' : '<button data-action="roll">ทอยลูกเต๋า</button>');
+    if (state.phase === 'offer') actions = state.picker ? '<button data-action="cancel">ยกเลิก</button>' : '<button class="gold" data-action="offer">เตรียมปิดดีล</button><button data-action="fail">ยุติการเจรจา</button>';
+    if (challenged) actions = '<button data-action="cede">ยอมให้มินปิดดีล</button>';
+    if (travelChallenge) actions = state.picker ? '<button data-action="cancel">ยกเลิก</button>' : '<button data-action="continue">เจรจาต่อ</button><button data-action="fail">ยุติการเจรจา</button>';
+    if (ready) actions = '<button class="gold" data-action="close">ปิดดีลและจ่ายเงิน</button>';
+    if (settled) actions = '<button class="gold" data-action="next">'+(state.round === 2 ? 'ดูผลเกม' : 'ไปตาถัดไป')+'</button>';
+    if (cards.some(card => state.hand.has(card.id) && cardPlayable(card,deal))) {
+      actions += '<button data-action="jump-hand">ดูการ์ดที่เล่นได้</button>';
+    }
+    body = '<div class="deal-head"><div><div>ตา '+(state.round+1)+' / 3</div><h1>'+deal.name+'</h1><small>'+deal.shares+' หน่วย × '+money(deal.rate)+'</small></div><div class="pot">เงินกองกลาง<b>'+deal.pot+'</b>ล้าน</div></div><div class="offer"><h2>ทีมที่ต้องใช้ '+deal.required+' ทีม และส่วนแบ่ง (ล้าน)</h2>'+rows+'<div>ส่วนแบ่งบอส <strong id="remainder">'+money(deal.pot-total)+'</strong></div></div><p id="message" role="status">'+(state.message || (state.phase === 'move' ? 'เปิดดีลตรงนี้ หรือทอยเพื่อเดินไปช่องใหม่' : 'ส่งข้อเสนอให้แต่ละทีม พอทุกทีมตกลงแล้วกดเตรียมปิดดีล'))+'</p><div class="actions">'+actions+'</div>';
+  }
+  get('table').innerHTML = body;
+  get('log').innerHTML = state.log.map(line => '<li>'+line+'</li>').join('');
+  renderHand(deal);
+}
+function offerTotal() {
+  return state.offers.reduce((sum,amount,i) => sum + (!state.selected.has(i) || covered(i) ? 0 : amount),0);
+}
+function settle(boss) {
+  const deal = current();
+  if (boss !== 0) {
+    state.offers = [...deal.asks];
+    deal.teams.forEach((team,i) => { if (state.owners[team] === boss || state.proxies.has(i)) state.offers[i] = 0; });
+  }
+  let remaining = deal.pot;
+  deal.teams.forEach((player,i) => {
+    if (!state.selected.has(i)) return;
+    const owner = state.owners[player];
+    if (boss === 0 ? covered(i) : owner === boss) return;
+    state.balances[owner] += state.offers[i];
+    remaining -= state.offers[i];
+  });
+  state.balances[boss] += remaining;
+  state.closed.set(state.position,state.dealNumber);
+  state.phase = 'settled';
+  state.message = players[boss]+'ปิดดีลและรับ '+money(remaining);
+  log(state.message);
+}
+document.addEventListener('input', event => {
+  if (state.phase !== 'offer' || state.picker) return;
+  const choice = event.target.dataset.selectTeam;
+  if (choice !== undefined) {
+    const i = Number(choice);
+    if (event.target.checked) state.selected.add(i);
+    else state.selected.delete(i);
+    if (!event.target.checked) delete state.accepted[i];
+    state.message = '';
+    render();
+    get('table').querySelector('[data-select-team="'+i+'"]')?.focus({preventScroll:true});
+    return;
+  }
+  if (!/^offer[0-5]$/.test(event.target.id)) return;
+  const i = Number(event.target.id.slice(-1));
+  state.offers[i] = event.target.valueAsNumber;
+  get('reply'+i).textContent = offerResponse(i,current());
+  const total = offerTotal();
+  get('remainder').textContent = Number.isFinite(total) ? money(current().pot-total) : '—';
+});
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-action]');
+  if (!button || button.disabled) return;
+  const action = button.dataset.action;
+  if (action === 'filter' || action === 'jump-hand') {
+    state.handFilter = action === 'jump-hand' ? 'playable' : button.dataset.filter;
+    renderHand(current());
+    get('cards').scrollLeft = 0;
+    if (action === 'jump-hand') get('filter-playable').focus();
+    return;
+  }
+  if (state.phase === 'rolling' && action !== 'reset') return;
+  const deal = current();
+  switch (action) {
+    case 'reset': reset(); break;
+    case 'roll':
+      if (state.phase === 'move' && !state.rolled) void rollDice();
+      return;
+    case 'open':
+      state.phase = 'offer';
+      state.message = '';
+      log('คุณเปิดดีล “'+deal.name+'”');
+      break;
+    case 'send-offer': {
+      const i = Number(button.dataset.team);
+      if (state.phase !== 'offer' || state.picker || !state.selected.has(i) || covered(i) || state.blocked.has(i)) return;
+      const amount = state.offers[i];
+      if (!Number.isInteger(amount) || amount < 0 || amount > deal.pot) {
+        get('message').textContent = 'ใส่ส่วนแบ่งเป็นจำนวนเต็มตั้งแต่ 0 ถึง '+money(deal.pot);
+        return;
+      }
+      const agreed = amount >= deal.asks[i];
+      state.accepted[i] = {amount,agreed};
+      const team = deal.teams[i];
+      const recipient = players[state.owners[team]]+' (ทีมสี'+teams[team].shade+')';
+      state.message = recipient+' '+offerResponse(i,deal);
+      log('คุณเสนอ '+money(amount)+' ให้ '+recipient+' · '+offerResponse(i,deal));
+      render();
+      get('table').querySelector('[data-action="send-offer"][data-team="'+i+'"]')?.focus({preventScroll:true});
+      return;
+    }
+    case 'offer': {
+      const selected = [...state.selected];
+      const validGroups = deal.groups.every(({count,colors}) =>
+        colors.filter(team => state.selected.has(deal.teams.indexOf(team))).length === count);
+      if (!validGroups) {
+        get('message').textContent = 'เลือกทีมให้ตรงกับจำนวนของแต่ละกลุ่มบนกระดาน';
+        return;
+      }
+      if (selected.some(i => state.blocked.has(i) && !state.proxies.has(i))) {
+        get('message').textContent = 'ทีมที่เดินทางยังเข้าดีลไม่ได้ ลองใช้ Team แทนหรือยุติการเจรจา';
+        return;
+      }
+      const amounts = selected.filter(i => !covered(i)).map(i => state.offers[i]);
+      if (amounts.some(value => !Number.isInteger(value) || value < 0) ||
+          amounts.reduce((sum,value) => sum+value,0) > deal.pot) {
+        get('message').textContent = 'ใส่ส่วนแบ่งเป็นจำนวนเต็มตั้งแต่ 0 และรวมกันไม่เกิน '+money(deal.pot);
+        return;
+      }
+      if (selected.some(i => !covered(i) && (!state.accepted[i]?.agreed || state.accepted[i].amount !== state.offers[i]))) {
+        state.message = 'ยังมีทีมที่ไม่ได้ตกลงกับยอดล่าสุด ส่งข้อเสนอให้ทีมเหล่านั้นก่อน';
+      } else if (state.round === 0) {
+        state.phase = 'challenge';
+        state.message = 'มินเล่นการ์ด Boss! ใช้ Stop หรือ Boss เพื่อรักษาสิทธิ์ปิดดีล';
+        log(state.message);
+      } else if (state.round === 1 && state.botTarget === null && selected.some(i => !covered(i))) {
+        state.botTarget = selected.find(i => !covered(i));
+        state.blocked.add(state.botTarget);
+        state.phase = 'travel';
+        const team = teams[deal.teams[state.botTarget]];
+        state.message = 'บอตเล่น Travel สี'+team.shade+' ใช้ Stop, Team สีเดียวกัน หรือกลับไปเลือกทีมใหม่';
+        log(state.message);
+      } else {
+        state.phase = 'ready';
+        state.message = 'ทีมครบแล้ว คุณปิดดีลได้';
+      }
+      break;
+    }
+    case 'card': {
+      const card = cards.find(entry => entry.id === button.dataset.card);
+      if (!card || !state.hand.has(card.id) || state.picker) return;
+      if (card.id === 'boss' || card.id === 'stop') {
+        if (state.phase !== 'challenge' && !(card.id === 'stop' && state.phase === 'travel')) return;
+        if (state.phase === 'travel') state.blocked.delete(state.botTarget);
+        state.hand.delete(card.id);
+        state.phase = 'ready';
+        state.message = 'คุณเป็นบอสและปิดดีลได้';
+        log('คุณเล่น '+card.title+' ตอบโต้');
+        render();
+        get('table').querySelector('[data-action="close"]')?.focus();
+        return;
+      }
+      if (!deal.teams.some((_,i) => canTarget(card,i))) return;
+      state.picker = card;
+      state.message = 'เลือกทีมเป้าหมายของการ์ด '+card.title;
+      render();
+      get('table').querySelector('[data-action="target"]')?.focus();
+      return;
+    }
+    case 'cancel': state.picker = null; state.message = ''; break;
+    case 'target': {
+      const index = Number(button.dataset.team);
+      const team = deal.teams[index];
+      const card = state.picker;
+      if (!canTarget(card,index)) return;
+      if (card.kind === 'team') state.proxies.add(index);
+      if (card.kind === 'travel') state.blocked.add(index);
+      if (card.id === 'recruit') state.owners[team] = 0;
+      state.message = 'คุณเล่น '+card.title+' กับทีมสี'+teams[team].shade;
+      log(state.message);
+      state.picker = null;
+      state.hand.delete(card.id);
+      state.phase = 'offer';
+      delete state.accepted[index];
+      break;
+    }
+    case 'continue': state.phase = 'offer'; state.message = ''; break;
+    case 'close': settle(0); break;
+    case 'cede': settle(1); break;
+    case 'fail':
+      state.phase = 'settled';
+      state.message = 'ดีลล่ม · ไม่มีการจ่ายเงิน ช่องนี้ยังเปิดอยู่';
+      log(state.message);
+      break;
+    case 'next':
+      if (state.round === 2) state.phase = 'finished';
+      else {
+        state.round++;
+        if (state.closed.has(state.position)) {
+          state.position = nextSpace(state.position);
+        }
+        beginRound();
+      }
+      break;
+  }
+  render();
+});
+get('influence-back').src = art('cards','influence-back');
+reset();
+render();
+</script>
+</body>
+</html>
