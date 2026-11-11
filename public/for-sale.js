@@ -28,6 +28,11 @@ function vehicle(value, button = false) {
   const content = '<b>' + value + '</b>' + art + '<span class="card-label">' + names[index] + '</span>';
   return button ? '<button class="vehicle" data-sell="' + value + '">' + content + '</button>' : '<div class="vehicle">' + content + '</div>';
 }
+function checkCard(value, label = 'เช็ค') {
+  return '<div class="check"><span>' + label + '</span><b>' + money(value) + '</b>' +
+    (value === 0 ? '<small>เช็คเปล่า</small>' : '') + '</div>';
+}
+
 function bidControls(minimum, maximum) {
   if (minimum > maximum) return '<p>เงินไม่พอเพิ่มยอดบิด</p>';
   return '<form id="bid-form" data-min="' + minimum + '" data-max="' + maximum + '">' +
@@ -43,9 +48,12 @@ function render() {
   if (!game) return;
   const {phase, round, rounds, players, turn, market, high} = game;
   const buying = phase === 'buy' || phase === 'bought';
-  const active = phase === 'buy' ? players[turn] : phase === 'sell' ? players[room.you] : null;
-  const canPlay = active?.id === room.you && (phase === 'buy' || active.chosen === null);
-  const cash = buying && canPlay ? active.cash - active.bid : null;
+  const you = players[room.you];
+  const active = phase === 'buy' ? players[turn] : phase === 'sell' ? you : null;
+  const canBid = phase === 'buy' && turn === room.you;
+  const canSell = phase === 'sell' && you.chosen === null;
+  const heldBid = phase === 'buy' && !you.passed ? you.bid : 0;
+  const hand = [...you.hand].sort((a, b) => a - b);
   const seats = players.map(player => {
     const state = phase === 'buy' && !player.passed ? 'บิด ' + money(player.bid)
       : buying ? 'ได้การ์ด ' + player.acquired
@@ -63,29 +71,36 @@ function render() {
         : '<button class="primary" data-action="start">เล่นเกมใหม่</button>') + '</div>';
   } else {
     const title = buying ? 'ประมูลยานพาหนะ' : 'ขายยานพาหนะ';
-    const cards = phase === 'bought' ? players.slice().sort((a, b) => a.acquired - b.acquired).map(player => '<div class="awarded">' + vehicle(player.acquired) + '<span>' + name(player.id) + '</span></div>').join('')
+    const cards = phase === 'sold' ? '<ul class="sale-results" aria-label="ผลการขายรอบนี้">' +
+      game.lastSale.map(({id, house, check}) => '<li><strong>' + name(id) + '</strong>' +
+        vehicle(house) + checkCard(check, 'เช็คที่ได้รับ') + '</li>').join('') + '</ul>'
+      : phase === 'bought' ? players.slice().sort((a, b) => a.acquired - b.acquired).map(player => '<div class="awarded">' + vehicle(player.acquired) + '<span>' + name(player.id) + '</span></div>').join('')
       : buying ? market.map(value => vehicle(value)).join('')
-      : market.map(value => '<div class="check"><span>เช็ค</span><b>' + money(value) + '</b>' + (value === 0 ? '<small>เช็คเปล่า</small>' : '') + '</div>').join('');
+      : market.map(value => checkCard(value)).join('');
     content = '<div class="tabletop"><div class="table-head"><div><p>ช่วง ' + (buying ? '1' : '2') + ' · รอบ ' + round + '/' + rounds + '</p><h2>' + title + '</h2></div>' +
       (phase === 'buy' ? '<strong>ยอดสูงสุด ' + money(high) + '</strong>' : '') +
-      '</div><ul class="seats">' + seats + '</ul><div class="cards">' + cards + '</div></div>';
+      '</div><ul class="seats">' + seats + '</ul>' +
+      (phase === 'sold' ? cards : '<div class="cards">' + cards + '</div>') + '</div>';
     if (phase === 'bought' || phase === 'sold') {
-      const report = phase === 'sold' ? '<ul class="sale-results">' + game.lastSale.map(row => '<li><strong>' + name(row.id) + '</strong> การ์ด ' + row.house + ' → ' + money(row.check) + '</li>').join('') + '</ul>'
+      const report = phase === 'sold' ? ''
         : '<p>' + name(turn) + ' ได้การ์ดเลขสูงสุดและจ่าย ' + money(players[turn].bid) + '</p>';
       const next = phase === 'bought' && round === rounds ? 'เริ่มขายยานพาหนะ' : phase === 'sold' && round === rounds ? 'ดูผลคะแนน' : 'รอบถัดไป';
       content += '<div class="actions">' + report + '<button class="primary" data-action="advance">' + next + '</button></div>';
-    } else if (!canPlay) {
+    } else if (!canBid && !canSell) {
       const message = buying ? 'รอ ' + name(turn) + ' ประมูล' : 'ล็อกการ์ดแล้ว รอผู้เล่นคนอื่นเลือก';
       content += '<div class="actions" role="status">' + message + '</div>';
     } else if (buying) {
-      content += '<div class="actions"><div><h3>ตาของ ' + name(active.id) + '</h3><p>เงินที่ยังไม่ลงบิด ' + money(cash) + ' · ลงบิดไว้ ' + money(active.bid) + '</p></div>' + bidControls(high + 1, active.cash) +
-        '<button data-action="pass">ผ่าน · รับการ์ด ' + market[0] + ' · จ่าย ' + money(Math.ceil(active.bid / 2)) + '</button></div>' +
-        (active.hand.length ? '<div class="hand"><h3>การ์ดในมือ</h3><div class="cards">' + [...active.hand].sort((a, b) => a - b).map(value => vehicle(value)).join('') + '</div></div>' : '');
-    } else {
-      content += '<div class="hand"><h3>' + name(active.id) + ' เลือกยานพาหนะที่จะขาย</h3><div class="cards">' + [...active.hand].sort((a, b) => a - b).map(value => vehicle(value, true)).join('') + '</div></div>';
+      content += '<div class="actions"><h3>ตาของ ' + name(you.id) + '</h3>' + bidControls(high + 1, you.cash) +
+        '<button data-action="pass">ผ่าน · รับการ์ด ' + market[0] + ' · จ่าย ' + money(Math.ceil(you.bid / 2)) + '</button></div>';
     }
   }
-  board.innerHTML = content + '<button class="leave outline" data-action="exit">กลับหน้าเริ่มเกม</button>';
+  const personal = '<section class="hand" aria-label="การ์ดและเงินของคุณ"><div class="hand-heading">' +
+    '<h3>การ์ดในมือของคุณ (' + hand.length + ')</h3><p>เงินคงเหลือ <strong>' + money(you.cash - heldBid) +
+    '</strong>' + (heldBid ? ' · ลงบิดไว้ ' + money(heldBid) : '') + '</p></div>' +
+    (canSell ? '<p>เลือกยานพาหนะที่จะขาย</p>' : '') +
+    (hand.length ? '<div class="cards">' + hand.map(value => vehicle(value, canSell)).join('') + '</div>' : '<p>ไม่มีการ์ดในมือ</p>') +
+    '</section>';
+  board.innerHTML = content + personal + '<button class="leave outline" data-action="exit">กลับหน้าเริ่มเกม</button>';
 }
 
 board.addEventListener('submit', event => {

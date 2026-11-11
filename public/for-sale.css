@@ -39,7 +39,7 @@ label{display:grid;gap:4px;font-weight:600}
 .table-head,.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .table-head p{margin:0;color:#dfd1f3}
 .table-head h2{margin:0;font-size:clamp(27px,5vw,50px)}
-.seats,.sale-results{list-style:none;padding:0;display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+.seats{list-style:none;padding:0;display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
 .seats li{border:1px solid #817199;border-radius:8px;padding:5px 11px;display:flex;gap:9px;align-items:baseline}
 .seats li.active{background:var(--lime);color:var(--ink);border-color:var(--lime)}
 .seats span{font-size:.83rem}
@@ -56,11 +56,15 @@ button.vehicle:hover{background:var(--lime);border-color:var(--ink)}
 .actions,.hand,.result{margin-top:14px;background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:clamp(13px,3vw,24px)}
 .actions{display:flex;flex-wrap:wrap;align-items:end;gap:14px}
 .actions p,.actions h3,.hand h3{margin:0}
-.hand h3{margin-bottom:12px}
+.hand-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 16px;margin-bottom:12px}
+.hand-heading p{margin:0;font-variant-numeric:tabular-nums}
 .hand .cards{justify-content:start}
 .hand .vehicle{width:clamp(75px,11vw,113px)}
-.sale-results{margin:0}
-.sale-results li{background:var(--lavender);padding:6px 9px;border-radius:6px}
+.sale-results{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;list-style:none;margin:0;padding:0}
+.sale-results li{display:grid;flex:1 1 112px;max-width:150px;grid-template-rows:1fr auto auto;gap:8px;min-width:0;text-align:center;padding:10px;border:1px solid #817199;border-radius:10px}
+.sale-results li>strong{align-self:center;overflow-wrap:anywhere}
+.sale-results .vehicle,.sale-results .check{width:100%;min-width:0}
+.sale-results .check{aspect-ratio:auto}
 .leave{margin-top:14px}
 input{width:7ch}
 table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-variant-numeric:tabular-nums}
