@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#271d43">
+<title>บิดแล้วรวย | For Sale</title>
+<link rel="stylesheet" href="/for-sale.css">
+<script type="module" src="/for-sale.js"></script>
+</head>
+<body>
+<header><a href="/">← รวมบอร์ดเกม</a><button id="open-rules" class="outline">วิธีเล่นและการ์ด</button></header>
+<main>
+<section id="lobby">
+  <div class="intro">
+    <p class="english">FOR SALE</p>
+    <h1>บิดแล้วรวย</h1>
+    <p>ประมูลยานพาหนะให้คุ้ม แล้วเลือกจังหวะขายให้ได้เงินมากที่สุด</p>
+    <form id="online-setup">
+      <label>ชื่อเล่น <input id="online-name" maxlength="24" autocomplete="nickname" required></label>
+      <label>รหัสห้อง <input id="online-code" maxlength="8" placeholder="กรอกเมื่อเข้าห้องเพื่อน" autocomplete="off" autocapitalize="characters"></label>
+      <div class="online-buttons">
+        <button class="primary" id="create-room">สร้างห้องออนไลน์</button>
+        <button id="join-room">เข้าห้องเพื่อน</button>
+      </div>
+    </form>
+  </div>
+  <div class="cover" aria-hidden="true"></div>
+</section>
+<p id="online-status" role="status" hidden></p>
+<section id="board" hidden aria-label="โต๊ะเล่น"></section>
+</main>
+<dialog id="rules">
+  <div class="dialog-head"><h2>วิธีเล่นและการ์ด</h2><form method="dialog"><button aria-label="ปิดคู่มือ">ปิด</button></form></div>
+  <p>เกมของ Stefan Dorra สำหรับ 3–6 คน เล่นสองช่วง เงินที่เหลือหลังประมูลรวมกับเช็คจากการขายเป็นคะแนนสุดท้าย</p>
+  <h3>เตรียมเกม</h3>
+  <ul><li>การ์ดยานพาหนะ 30 ใบ เลข 1–30 เลขมากชนะเลขน้อยตอนขาย</li><li>เช็ค 30 ใบ มี $0 และ $2,000–$15,000 อย่างละ 2 ใบ</li><li>เงินประมูลหน่วยละ $1,000 ตามฉบับ IELLO มีธนบัตร 84 ใบ ในเกมนี้ระบบนับยอดให้อัตโนมัติ</li></ul>
+  <table><thead><tr><th>ผู้เล่น</th><th>เงินต่อคน</th><th>นำออกต่อกอง</th><th>รอบต่อช่วง</th></tr></thead><tbody>
+  <tr><td>3</td><td>$28,000</td><td>0</td><td>10</td></tr><tr><td>4</td><td>$21,000</td><td>2</td><td>7</td></tr>
+  <tr><td>5</td><td>$16,000</td><td>0</td><td>6</td></tr><tr><td>6</td><td>$14,000</td><td>0</td><td>5</td></tr>
+  </tbody></table>
+  <h3>1. ประมูลยานพาหนะ</h3>
+  <p>สับกองยานพาหนะและกองเช็คแยกกัน ถ้าเล่น 4 คนให้นำออกกองละ 2 ใบโดยไม่เปิด จากนั้นสุ่มคนเริ่ม เปิดการ์ดยานพาหนะเท่าจำนวนผู้เล่นแล้วเล่นวนตามเข็มนาฬิกา เมื่อถึงตาให้เพิ่มยอดบิดเหนือยอดสูงสุด หรือผ่านแล้วหยิบการ์ดเลขต่ำสุดที่ยังอยู่บนโต๊ะ คนที่ผ่านได้เงินบิดคืนครึ่งหนึ่งปัดลง เช่น บิด $5,000 แล้วผ่าน ได้คืน $2,000 และเสีย $3,000 คนสุดท้ายจ่ายเต็ม รับการ์ดใบที่เหลือ และเริ่มรอบถัดไป</p>
+  <h3>2. ขายยานพาหนะ</h3>
+  <p>เปิดเช็คเท่าจำนวนผู้เล่น ทุกคนเลือกการ์ดยานพาหนะหนึ่งใบแบบคว่ำไว้ แล้วเปิดพร้อมกัน การ์ดเลขสูงสุดได้เช็คยอดสูงสุด ไล่ลงมาตามอันดับ เช่น การ์ด 28, 20, 8 จับคู่กับเช็ค $13,000, $12,000, $0 ตามลำดับ เก็บเช็คแล้วทิ้งการ์ดที่ขาย</p>
+  <h3>จบเกม</h3>
+  <p>เมื่อขายยานพาหนะหมด ให้รวมเงินสดที่เหลือกับเช็คทั้งหมด ยอดมากที่สุดชนะ ถ้าเสมอ คนที่มีเงินสดมากกว่าชนะ ถ้ายังเสมอให้ชนะร่วมกัน</p>
+  <details><summary>ดูการ์ดยานพาหนะทั้ง 30 ใบ</summary><div class="cards catalog" id="catalog"></div></details>
+  <p><a href="https://iellogames.com/wp-content/uploads/2020/07/For-Sale_Rulebook_EN_V2.pdf" target="_blank" rel="noopener">คู่มือ IELLO</a> · <a href="https://youtu.be/5O6huXEFc08" target="_blank" rel="noopener">คลิปเล่นฉบับยานพาหนะจาก RUBSARB</a></p>
+</dialog>
+</body>
+</html>

@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700;800&family=Geist:wght@400;600;800;900&display=swap');
+:root{font-family:"Kantumruy Pro","Leelawadee UI",Tahoma,sans-serif;color:#271d43;background:#f1eafa;--ink:#271d43;--paper:#fffaf0;--lime:#e0ed83;--lavender:#e4d8f4;--border:#b5a6cb}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+a{color:inherit}
+header{min-height:68px;background:var(--ink);color:var(--paper);display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px max(5vw,16px)}
+header a{text-decoration:none;font-weight:700}
+main{max-width:1200px;margin:auto;padding:clamp(18px,4vw,55px) clamp(14px,3vw,40px)}
+button,input,select{font:inherit;color:inherit}
+button,select,input{border:1px solid var(--ink);border-radius:8px;background:var(--paper);padding:8px 13px;min-height:42px}
+button{cursor:pointer;font-weight:700}
+button:hover{background:#eee3ff}
+:focus-visible{outline:3px solid #e27449;outline-offset:3px}
+.primary{background:var(--lime);color:var(--ink);border:1px solid var(--ink);box-shadow:0 3px 0 var(--ink)}
+.primary:hover{background:#f0fbad}
+.outline{background:transparent;border-color:currentColor}
+header .outline:hover{color:var(--ink)}
+#lobby{display:grid;grid-template-columns:1.1fr 1fr;min-height:440px;border:1px solid var(--ink);border-radius:22px;overflow:hidden;background:var(--paper);box-shadow:0 8px 0 var(--ink)}
+.intro{padding:clamp(24px,5vw,68px);align-self:center}
+.english{font:900 clamp(26px,5vw,67px)/.9 Geist,sans-serif;letter-spacing:-.08em;margin:0;color:#a4412d}
+h1{font-size:clamp(40px,7vw,91px);line-height:1.15;letter-spacing:-.05em;margin:.14em 0}
+.intro>p:not(.english){font-size:1.1rem;max-width:30ch}
+#bid-form{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+.bid-stepper{display:flex;gap:6px}
+.bid-stepper button{width:44px;padding:4px;font-size:1.2rem}
+.bid-stepper button:disabled{opacity:.45;cursor:default}
+#bid-form .primary{min-width:110px;font-variant-numeric:tabular-nums}
+#online-setup,.online-buttons{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+#online-setup{margin-top:22px}
+#online-setup input,#invite-link{width:100%;min-width:0}
+#online-status{padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--paper)}
+.room-info{margin-bottom:14px}
+.room-info h2{margin:0}
+.room-info label{flex:1 1 245px}
+label{display:grid;gap:4px;font-weight:600}
+.cover{min-height:240px;background:#087c98 url('/assets/for-sale/cover.webp') center/cover;border-left:1px solid var(--ink)}
+.tabletop{border:1px solid var(--ink);border-radius:20px;padding:clamp(14px,3vw,32px);background:var(--ink);color:var(--paper)}
+.table-head,.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.table-head p{margin:0;color:#dfd1f3}
+.table-head h2{margin:0;font-size:clamp(27px,5vw,50px)}
+.seats,.sale-results{list-style:none;padding:0;display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+.seats li{border:1px solid #817199;border-radius:8px;padding:5px 11px;display:flex;gap:9px;align-items:baseline}
+.seats li.active{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.seats span{font-size:.83rem}
+.cards{display:flex;flex-wrap:wrap;gap:clamp(6px,1.4vw,15px);align-items:start;justify-content:center}
+.vehicle{display:grid;grid-template-rows:auto auto 1fr;width:clamp(82px,13vw,145px);background:#faf1dc;color:#201b29;border:2px solid #25202d;border-radius:10px;padding:5px;box-shadow:0 3px 0 #120b2633;text-align:center}
+.vehicle b{justify-self:start;padding:2px 5px;border-radius:4px;background:#25202d;color:#fff8e9;font:900 italic clamp(14px,2vw,22px)/1 Geist,sans-serif}
+.art{display:block;place-self:center;aspect-ratio:1;width:90%;background:#faf1dc url('/assets/for-sale/vehicles.webp') var(--x) var(--y)/600% 500%;border-radius:5px}
+.card-label{font-size:clamp(.75rem,1.4vw,.94rem);line-height:1.45;padding:4px 1px 3px;font-weight:700;overflow-wrap:anywhere}
+.card-label::before{content:"";display:block;height:6px;margin:0 -1px 4px;background:conic-gradient(#25202d 25%,#fff8e9 0 50%,#25202d 0 75%,#fff8e9 0) 0 0/6px 6px}
+button.vehicle:hover{background:var(--lime);border-color:var(--ink)}
+.check{display:grid;align-content:center;gap:4px;text-align:center;min-width:clamp(85px,14vw,150px);padding:9px;min-height:75px;aspect-ratio:1.6;background:#ffe087;color:#38231e;border:3px double #a45034;border-radius:8px}
+.check b{font:800 clamp(14px,2.5vw,26px) Geist,sans-serif}
+.awarded{text-align:center;display:grid;gap:5px}
+.actions,.hand,.result{margin-top:14px;background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:clamp(13px,3vw,24px)}
+.actions{display:flex;flex-wrap:wrap;align-items:end;gap:14px}
+.actions p,.actions h3,.hand h3{margin:0}
+.hand h3{margin-bottom:12px}
+.hand .cards{justify-content:start}
+.hand .vehicle{width:clamp(75px,11vw,113px)}
+.sale-results{margin:0}
+.sale-results li{background:var(--lavender);padding:6px 9px;border-radius:6px}
+.leave{margin-top:14px}
+input{width:7ch}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-variant-numeric:tabular-nums}
+th,td{text-align:start;padding:7px;border-bottom:1px solid var(--border)}
+dialog{max-width:min(700px,calc(100% - 20px));max-height:90dvh;background:var(--paper);color:var(--ink);border:1px solid var(--ink);border-radius:14px;padding:clamp(14px,3vw,32px)}
+dialog::backdrop{background:#120b26b8}
+dialog h2{margin:0}
+summary{cursor:pointer;font-weight:700}
+.catalog{margin:14px 0;justify-content:start}
+.catalog .vehicle{width:clamp(70px,11vw,104px)}
+@media(max-width:680px){#lobby{grid-template-columns:1fr;min-height:0}.cover{grid-row:1;min-height:170px;border-left:0;border-bottom:1px solid var(--ink)}.intro{padding:20px}.seats li{gap:5px}.table-head strong{text-align:right}}

@@ -6,6 +6,7 @@ import {bossEnter,bossRoom,maintainBossRooms} from './src/boss-game.mjs';
 import {skullEnter,skullRoom,maintainSkullRooms} from './src/skull-game.mjs';
 import {petsEnter,petsRoom,maintainPetsRooms} from './src/pets-game.mjs';
 import {knowEnter,knowRoom,maintainKnowRooms} from './src/know-online.mjs';
+import {forSaleEnter,forSaleRoom,maintainForSaleRooms} from './src/for-sale-online.mjs';
 
 const rooms = new Map();
 const token = () => randomBytes(24).toString('base64url');
@@ -14,6 +15,9 @@ const assets = new Map(Object.entries({
   '/pets-cards.js':'pets-cards.js','/assets/pets/characters.png':'assets/pets/characters.png',
   '/assets/pets/cover.png':'assets/pets/cover.png',
   '/':'hub.html','/games/incan-gold':'index.html','/app.js':'app.js','/style.css':'style.css',
+  '/games/for-sale':'for-sale.html','/for-sale.js':'for-sale.js','/for-sale.css':'for-sale.css',
+  '/assets/for-sale/cover.webp':'assets/for-sale/cover.webp',
+  '/assets/for-sale/vehicles.webp':'assets/for-sale/vehicles.webp',
   '/games/im-the-boss':'boss-online.html','/games/im-the-boss/demo':'boss.html',
   '/games/i-know-you-dont':'know.html','/know.js':'know.js','/know.css':'know.css',
   '/know-rules.js':'know-rules.js',
@@ -94,6 +98,12 @@ export const server = createServer(async (req,res)=>{
       const state=petsRoom(url.searchParams.get('code'),req.headers.authorization,input);
       return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
     }
+    if (url.pathname==='/api/for-sale/enter' && req.method==='POST') return send(res,200,forSaleEnter(await body(req)));
+    if (url.pathname==='/api/for-sale/room' && ['GET','POST'].includes(req.method)) {
+      const input = req.method==='POST' ? await body(req) : undefined;
+      const state = forSaleRoom(url.searchParams.get('code'),req.headers.authorization,input);
+      return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
+    }
     if (url.pathname==='/api/skull/enter' && req.method==='POST') return send(res,200,skullEnter(await body(req)));
     if (url.pathname==='/api/skull/room' && ['GET','POST'].includes(req.method)) {
       const input=req.method==='POST' ? await body(req) : null;
@@ -134,6 +144,7 @@ setInterval(()=>{
   const now = Date.now();
   maintainBossRooms(now);
   maintainSkullRooms(now);
+  maintainForSaleRooms(now);
   maintainPetsRooms(now);
   maintainKnowRooms(now);
   for (const [code,room] of rooms) {
