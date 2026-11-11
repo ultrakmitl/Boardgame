@@ -30,6 +30,9 @@ test('treasure remainder, simultaneous exits, solo artifact and repeated hazard'
   assert.deepEqual(publicPlayers[0].outcome,{kind:'exit',carried:2,share:1});
   assert.deepEqual(publicPlayers[3].outcome,{kind:'hazard',lost:2});
   assert.equal(publicPlayers[0].bank,undefined);
+  assert.deepEqual(players[2].roundScores,[{gems:3,artifacts:5}]);
+  assert.deepEqual(players[3].roundScores,[{gems:0,artifacts:0}]);
+  assert.deepEqual(view(room,players[3]).deckInfo,{treasures:1,removedHazards:{'งู':1}});
   assert.equal(room.deck.filter(c=>c.kind==='hazard').length,1);
   assert.equal(room.phase,'intermission');
 });
@@ -64,6 +67,8 @@ test('three independent sessions use one invite, reload and finish five rounds',
   for(let round=1;round<=5;round++) {
     const state = await read(host);
     assert.equal(state.round,round);
+    assert.ok([14,15].includes(state.deckInfo.treasures));
+    assert.equal(state.standings,undefined);
     assert.ok(state.players.every(player=>player.outcome===null));
     assert.equal(state.introduced.value,[5,7,8,10,12][round-1]);
     assert.equal(state.deck,undefined);
@@ -78,6 +83,14 @@ test('three independent sessions use one invite, reload and finish five rounds',
     const end = await read(host);
     assert.equal(end.phase,round===5?'finished':'intermission');
     if(round<5) assert.equal((await act(host,end.turn,'next')).status,200);
-    else assert.equal(end.standings.length,3);
+    else {
+      assert.equal(end.standings.length,3);
+      for (const player of end.standings) {
+        assert.equal(player.rounds.length,5);
+        assert.equal(player.gems,player.rounds.reduce((sum,round)=>sum+round.gems,0));
+        assert.equal(player.artifactPoints,player.rounds.reduce((sum,round)=>sum+round.artifacts,0));
+        assert.equal(player.score,player.gems+player.artifactPoints);
+      }
+    }
   }
 });

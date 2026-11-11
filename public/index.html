@@ -1,21 +1,23 @@
 <!doctype html>
 <html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ขุมทรัพย์แห่งแอนดีส</title><link rel="stylesheet" href="/style.css"></head>
 <body>
-<header><a href="/">◈ แอนดีส</a><nav><button data-dialog="rules">วิธีเล่น</button><button data-dialog="board-game">ภาพบอร์ดเกม</button><button data-dialog="credits">เครดิต</button></nav></header>
+<header class="game-nav"><a class="hub-link" href="/">← กลับโต๊ะเกม</a><nav><button data-dialog="rules">วิธีเล่น</button></nav></header>
 <main>
-<section id="home" class="hero"><div><span class="eyebrow">THE ANDES EXPEDITION / 01</span><h1>ขุมทรัพย์<br>แห่งแอนดีส</h1><p>ยิ่งลึกยิ่งได้มาก แต่จะกลับทันไหม?</p><span class="tag">3–8 คน · 5 รอบ · เล่นพร้อมกัน</span></div>
+<section id="home" class="hero"><div><h1>ขุมทรัพย์<br>แห่งแอนดีส</h1><p>ยิ่งลึกยิ่งได้มาก แต่จะกลับทันไหม?</p><span class="tag">3–8 คน · 5 รอบ · เล่นพร้อมกัน</span></div>
 <form id="entry" class="panel"><h2>ตั้งคณะสำรวจ</h2><label>ชื่อเล่น<input id="name" required maxlength="24" placeholder="ชื่อที่เพื่อนจะเห็น"></label><label>รหัสห้อง<input id="code" maxlength="8" placeholder="กรอกรหัสเพื่อเข้าร่วม"></label><button class="primary" id="join" value="join">เข้าห้อง</button><button value="create">สร้างห้องใหม่</button></form></section>
 <p id="notice" role="status"></p><section id="room" hidden></section>
 </main>
-<dialog id="rules"><form method="dialog"><button aria-label="ปิด">×</button></form><h2>วิธีเล่น</h2><p>สำรวจวิหารทั้งหมด 5 รอบ หลังเปิดไพ่แรก ทุกคนที่ยังอยู่เลือกสำรวจต่อหรือกลับแคมป์พร้อมกัน</p><p>ถ้าพบสมบัติ 11 หน่วยขณะอยู่ 4 คน จะได้คนละ 2 หน่วย เหลือ 3 หน่วยบนทางเดิน ถ้ากลับพร้อมกัน 2 คน จะเก็บเศษคนละ 1 และเหลือบนทางเดิน 1 หน่วย</p><p>กลับคนเดียวจะเก็บโบราณวัตถุที่ยังอยู่บนเส้นทางทั้งหมด แต่ละชิ้นมีคะแนนตามตัวเลขบนไพ่ และจะเพิ่มเข้ากองทีละใบจากคะแนนต่ำไปสูง</p><p>เจอภัยชนิดเดิมเป็นครั้งที่สอง รอบจะจบทันที คนในวิหารเสียสมบัติที่ถือในรอบนั้น เมื่อจบเกม คนที่มีคะแนนรวมสูงสุดชนะ ถ้าเท่ากันให้เทียบจำนวนโบราณวัตถุ</p><a href="https://drive.google.com/file/d/1g9iStN6y5m0VZFrQFYN3a2RFztps4W6s/view">คู่มือเกมหลักฉบับ 2024</a></dialog>
-<dialog id="board-game"><form method="dialog"><button aria-label="ปิด">×</button></form>
-<h2>Incan Gold ฉบับปี 2024</h2>
-<figure><img loading="lazy" width="600" src="https://www.eagle-gryphon.com/cdn/shop/files/102424-2.png?v=1747772535&amp;width=750" alt="ภาพสินค้า Incan Gold ฉบับ 2024 จากผู้จัดพิมพ์"><figcaption>ภาพสินค้าฉบับปี 2024</figcaption></figure>
-<figure><img loading="lazy" width="600" src="https://cdn.shopify.com/s/files/1/0739/9053/7438/files/incan_gold_2023_display_d1b5488b-91a6-4e51-9d92-064d3047c905.gif?v=1747040610" alt="ชุดบอร์ดเกม Incan Gold พร้อมการ์ด เต็นท์ และอัญมณี"><figcaption>อุปกรณ์ในกล่อง รวมภาพส่วนเสริม New Dangers</figcaption></figure>
-<p>ภาพประกอบจาก <a href="https://www.eagle-gryphon.com/products/incan-gold-2024">Eagle-Gryphon Games</a> · งานภาพโดย Mila Harbar</p></dialog>
-<dialog id="credits"><form method="dialog"><button aria-label="ปิด">×</button></form><h2>เครดิต</h2><p>ดัดแปลงจาก Incan Gold ออกแบบโดย Alan R. Moon และ Bruno Faidutti</p><ul>
-<li>ภาพการ์ดครอปจาก <a href="https://www.youtube.com/watch?v=egslxlsRCNs">วิดีโอเล่น Incan Gold</a> ช่วง 12:30, 19:10 และ 27:30 ใช้ภาพกราฟิกประกอบในวิดีโอ ภาพที่ไม่มีตรงชนิดใช้ภาพจาก Siam Board Games พร้อมชื่อบนไพ่</li>
-<li><a href="https://commons.wikimedia.org/wiki/File:00_1596_Ruinenstadt_Machu_Picchu.jpg">Machu Picchu</a> โดย W. Bulach · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> · ใช้ภาพย่อและจัดครอปด้วย CSS</li>
-<li><a href="https://commons.wikimedia.org/wiki/File:Native_gold_nuggets.jpg">Native gold nuggets</a> โดย Aram Dulyan · สาธารณสมบัติ · จัดครอปด้วย CSS</li>
-<li><a href="https://commons.wikimedia.org/wiki/File:Female_figurine_MET_LC-1979_206_1058-image_4.jpg">Female figurine</a> จาก The Metropolitan Museum of Art · <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> · จัดครอปด้วย CSS</li></ul></dialog>
+<dialog id="rules" aria-labelledby="rules-title">
+  <form method="dialog"><button aria-label="ปิดวิธีเล่น">×</button></form>
+  <h2 id="rules-title">วิธีเล่น Incan Gold</h2>
+  <p>ผู้เล่น 3–8 คน สำรวจวิหาร 5 รอบ เก็บเพชรและโบราณวัตถุให้ได้คะแนนรวมสูงสุด</p>
+  <ol class="rules-steps">
+    <li><strong>เปิดการ์ด</strong> เมื่อพบสมบัติ แบ่งเพชรเท่า ๆ กันให้คนที่ยังอยู่ในวิหาร เศษที่แบ่งไม่ได้จะอยู่กองกลาง ถ้าเปิดได้ 11 เพชรและมี 4 คน จะได้คนละ 2 เหลือกลาง 3</li>
+    <li><strong>ตัดสินใจพร้อมกัน</strong> มี 45 วินาทีให้เลือก <b>สำรวจต่อ</b> หรือ <b>กลับแคมป์</b> ตัวเลือกจะเปิดพร้อมกัน หากหมดเวลา ระบบจะให้กลับแคมป์</li>
+    <li><strong>กลับแคมป์</strong> ฝากเพชรที่ถืออยู่ แล้วแบ่งกองกลางเท่า ๆ กันเฉพาะคนที่กลับตานี้ ถ้ากลับ 2 คนตอนกองกลางมี 3 จะได้เพิ่มคนละ 1 และเหลือกลาง 1 ถ้ากลับคนเดียว จะได้เพชรกองกลางทั้งหมดและโบราณวัตถุที่ยังไม่มีใครเก็บ</li>
+    <li><strong>ระวังภัยซ้ำ</strong> ภัยชนิดเดิมครั้งที่สองในรอบเดียวกันทำให้รอบจบทันที คนที่ยังอยู่ในวิหารเสียเพชรที่ถืออยู่ และนำไพ่ภัยใบที่สองออกจากเกม รอบจบเช่นกันเมื่อทุกคนกลับแคมป์</li>
+    <li><strong>เริ่มรอบถัดไป</strong> คืนไพ่สมบัติและภัยที่ยังใช้ได้เข้ากอง เก็บโบราณวัตถุที่ยังไม่เปิดไว้ในกอง นำใบที่เปิดแล้วแต่ไม่มีใครเก็บออก แล้วสับรวมกับโบราณวัตถุใบใหม่ของรอบนั้น</li>
+    <li><strong>รวมคะแนนหลังรอบที่ 5</strong> เพชร 1 เม็ดเท่ากับ 1 แต้ม โบราณวัตถุคิดตามแต้มบนการ์ด ถ้าคะแนนเท่ากัน คนที่มีโบราณวัตถุมากกว่าชนะ ถ้ายังเท่ากันชนะร่วมกัน</li>
+  </ol>
+</dialog>
 <script type="module" src="/app.js"></script></body></html>

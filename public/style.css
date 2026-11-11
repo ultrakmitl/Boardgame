@@ -28,3 +28,29 @@
   .zone-mark { width:16px; height:15px; }
   .zone h2 { gap:4px; font-size:.95rem; }
 }
+
+.game-nav .hub-link { letter-spacing:0; color:var(--ink); padding:8px 0; }
+.rules-steps { padding-inline-start:1.5rem; }
+.rules-steps li { padding:8px 0 8px 4px; }
+.rules-steps strong { display:block; color:var(--gold); }
+.table-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.table-metrics > div { display:grid; justify-items:start; padding:12px; border:1px solid var(--line); border-radius:10px; background:#1a211a; }
+.table-metrics > div:first-child { background:#392b19; border-color:#b48b4d; }
+.table-metrics strong { color:var(--gold); font-size:clamp(1.6rem,5vw,2.6rem); line-height:1.2; font-variant-numeric:tabular-nums; }
+.table-metrics span,.table-metrics small { color:var(--muted); font-size:.84rem; }
+.return-estimate { display:flex; flex-wrap:wrap; align-items:center; gap:6px 18px; padding:10px 12px; margin-block:10px; border-inline-start:3px solid #82b9a0; background:#1d3028; border-radius:5px; font-size:.88rem; }
+.return-estimate b { color:#c4f5db; font-size:1rem; }
+.deck-strip { display:flex; flex-wrap:wrap; gap:8px 18px; padding:10px 0; color:var(--muted); font-size:.85rem; }
+.deck-strip b { color:var(--ink); }
+.hazard-count { display:inline-block; padding:1px 6px; border-radius:4px; background:#462b23; }
+.card.artifact img { object-fit:contain; background:#1c1610; }
+.card.artifact strong { font-size:1.05rem; }
+.winner { color:var(--gold); }
+.score-scroll { overflow:auto; margin-bottom:16px; }
+.score-table { width:100%; min-width:690px; border-collapse:collapse; text-align:start; font-size:.84rem; }
+.score-table caption { text-align:start; padding:4px 0 10px; color:var(--muted); }
+.score-table th,.score-table td { padding:9px 10px; border-block-end:1px solid var(--line); text-align:start; vertical-align:top; }
+.score-table thead th { background:#382c1d; color:#ffe193; }
+.score-table tbody th { min-width:95px; max-width:145px; overflow-wrap:anywhere; }
+.score-table td span { display:block; white-space:nowrap; }
+.score-table td strong { color:var(--gold); }

@@ -9,11 +9,11 @@ function shuffle(cards) {
   return cards;
 }
 export function start(room) {
-  Object.assign(room, {phase:'playing',round:0,
+  Object.assign(room, {phase:'playing',round:0,removedHazards:{},
     artifacts:[5,7,8,10,12].map(value=>({kind:'artifact',value})),
     deck:[...treasures.map(value=>({kind:'treasure',value})),
       ...hazards.flatMap(value=>Array.from({length:3},()=>({kind:'hazard',value})))]});
-  for (const p of room.players) Object.assign(p,{bank:0,bonus:0,artifacts:0});
+  for (const p of room.players) Object.assign(p,{bank:0,bonus:0,artifacts:0,roundScores:[]});
   nextRound(room);
 }
 export function nextRound(room) {
@@ -32,7 +32,14 @@ export function nextRound(room) {
 }
 function endRound(room, reason) {
   room.deck.push(...room.path.filter(card=>card.kind!=='artifact' && !card.removed));
-  for (const p of room.players) Object.assign(p,{carry:0,active:false});
+  for (const p of room.players) {
+    const exit = p.outcome?.kind==='exit' ? p.outcome : null;
+    (p.roundScores ??= []).push({
+      gems:exit ? exit.carried+exit.share : 0,
+      artifacts:exit?.artifactPoints ?? 0
+    });
+    Object.assign(p,{carry:0,active:false});
+  }
   room.leftovers = 0;
   room.reason = reason;
   room.deadline = null;
@@ -46,6 +53,8 @@ export function draw(room) {
   room.path.push(entry);
   if (repeated) {
     entry.removed = true;
+    room.removedHazards ??= {};
+    room.removedHazards[card.value] = (room.removedHazards[card.value] ?? 0)+1;
     for (const p of room.players.filter(player=>player.active)) {
       p.outcome = {kind:'hazard',lost:p.carry};
     }
@@ -75,6 +84,7 @@ export function resolve(room) {
       card.claimed = true;
       leaving[0].artifacts++;
       leaving[0].bonus += card.value;
+      leaving[0].outcome.artifactPoints = (leaving[0].outcome.artifactPoints ?? 0)+card.value;
     }
   }
   room.decisions.clear();
@@ -85,9 +95,14 @@ export function resolve(room) {
 export function view(room, player) {
   const {code,phase,round,turn,path,leftovers,deadline,revealed,reason,introduced} = room;
   const standings = phase==='finished' ? room.players.map(p=>({
-    name:p.name,score:p.bank+p.bonus,artifacts:p.artifacts
+    name:p.name,score:p.bank+p.bonus,artifacts:p.artifacts,gems:p.bank,artifactPoints:p.bonus,
+    rounds:p.roundScores
   })).sort((a,b)=>b.score-a.score || b.artifacts-a.artifacts) : undefined;
-  return {code,phase,round,turn,path,leftovers,deadline,revealed,reason,introduced,standings,
+  const deckInfo = phase==='lobby' ? undefined : {
+    treasures:room.deck.filter(card=>card.kind==='treasure').length,
+    removedHazards:room.removedHazards ?? {}
+  };
+  return {code,phase,round,turn,path,leftovers,deadline,revealed,reason,introduced,standings,deckInfo,
     host:room.host===player.id, you:{active:player.active,carry:player.carry,
       bank:player.bank,bonus:player.bonus,choice:room.decisions.get(player.id)},
     players:room.players.map(p=>({name:p.name,active:p.active,artifacts:p.artifacts,outcome:p.outcome,
