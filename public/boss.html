@@ -73,8 +73,7 @@
   .offer-group{border:0;border-top:1px solid #ffffff45;margin:8px 0;padding:4px 0;min-width:0}
   .offer-group legend{padding:0 6px;color:#ffe2a1}
   .offer-row input[type="checkbox"]{width:auto;accent-color:var(--gold);margin:0 5px 0 0}
-  .chip{display:inline-grid;place-items:center;background:var(--team);color:#161b24;border-radius:50%;width:1.45em;height:1.45em;font-size:clamp(9px,1.12vw,14px);font-weight:bold}
-  .chip svg{width:68%;height:68%;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+  .chip{display:inline-block;border-radius:50%;width:1.45em;height:auto;aspect-ratio:1;vertical-align:middle;font-size:clamp(9px,1.12vw,14px)}
   .offer-row .chip{margin-right:5px;vertical-align:middle;font-size:16px}
   .space.current{border-color:#fff6d3;background:#f6cf7d;box-shadow:inset 0 0 0 1px #6b461c}
   .space.closed{padding:0;background:#12483f;overflow:hidden}
@@ -139,12 +138,12 @@
 <script>
 const players = ['คุณ','มิน','เจ','พลอย'];
 const teams = [
-  {shade:'เหลือง', icon:'<path d="m3 8 9-5 9 5M4 21h16M6 10v8m6-8v8m6-8v8"/>', color:'#f4c976'},
-  {shade:'ฟ้า', icon:'<path d="M9 3h6m-5 0v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M8 15h8"/>', color:'#8cd5e0'},
-  {shade:'แดง', icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="8" r="1"/><circle cx="8" cy="13" r="1"/><circle cx="16" cy="13" r="1"/>', color:'#f1a29b'},
-  {shade:'ม่วง', icon:'<path d="m4 15 10-10 5 5-10 10zm9-9 5 5M5 13l6 6"/>', color:'#c3b1eb'},
-  {shade:'ส้ม', icon:'<path d="m9 5 5-3 5 8-5 3zm3 6-8 6m10 3h8"/>', color:'#f7a768'},
-  {shade:'เขียว', icon:'<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M8 8V5h8v3M3 13h18"/>', color:'#9ac987'}
+  {shade:'เหลือง', color:'#f4c976'},
+  {shade:'ฟ้า', color:'#8cd5e0'},
+  {shade:'แดง', color:'#f1a29b'},
+  {shade:'ม่วง', color:'#c3b1eb'},
+  {shade:'ส้ม', color:'#f7a768'},
+  {shade:'เขียว', color:'#9ac987'}
 ];
 const [Y,B,R,P,O,G] = [0,1,2,3,4,5];
 const teamColors = ['yellow','blue','red','purple','orange','green'];
@@ -206,8 +205,8 @@ const current = () => {
 const money = value => value + ' ล้าน';
 const dollar = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',maximumFractionDigits:0});
 function teamChip(team) {
-  const color = teams[team];
-  return '<span class="chip" style="--team:'+color.color+'" title="ทีมสี'+color.shade+'" role="img" aria-label="ทีมสี'+color.shade+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+color.icon+'</svg></span>';
+  const label='ทีมสี'+teams[team].shade;
+  return '<img class="chip" src="'+art('cards','badge-'+teamColors[team])+'" alt="'+label+'" title="'+label+'">';
 }
 const log = message => state.log.unshift(message);
 const covered = i => state.proxies.has(i) || (!state.blocked.has(i) && state.owners[deals[state.position].teams[i]] === 0);

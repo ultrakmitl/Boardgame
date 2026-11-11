@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import {bossEnter,bossRoom} from '../src/boss-game.mjs';
-import {board} from '../public/boss-rules.js';
+import {art,board,colors} from '../public/boss-rules.js';
 
 function table(count) {
   const host=bossEnter({name:'A',create:true});
@@ -104,6 +104,12 @@ test('Hub and online room routes serve the invite, scripts and artwork',async t=
   assert.match(online,/src="\/boss-online.js"/);
   assert.match(online,/<a class="hub-link" href="\/">← กลับโต๊ะเกม<\/a>/);
   assert.match(online,/id="invite-url" readonly/);
+  for (const [color] of colors) {
+    const badge=await get(art('cards','badge-'+color));
+    assert.equal(badge.status,200,color);
+    assert.equal(badge.headers.get('content-type'),'image/png',color);
+    await badge.arrayBuffer();
+  }
   for (const asset of ['/boss-online.js','/boss-rules.js','/boss-online.css','/assets/boss/cards/boardroom.png','/assets/boss/cards/influence-back.png']) {
     const response=await get(asset);
     assert.equal(response.status,200,asset);

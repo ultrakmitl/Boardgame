@@ -73,7 +73,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 .tile-head{display:flex;justify-content:space-between;gap:2px;font-size:clamp(9px,1.2vw,14px);font-weight:bold}
 .groups{display:flex;gap:2px;flex-wrap:wrap}
 .group{display:flex;align-items:center;flex-wrap:wrap;gap:1px;border:1px solid #927c62;border-radius:3px;padding:1px;font-size:clamp(8px,1vw,12px);line-height:1}
-.chip{display:inline-grid;place-items:center;width:1.4em;height:1.4em;background:var(--team);color:#16232c;border-radius:50%;font:700 clamp(8px,1.1vw,13px)/1 "Segoe UI Symbol",sans-serif}
+.chip{display:inline-block;width:clamp(13px,1.65vw,21px);height:auto;aspect-ratio:1;border-radius:50%;vertical-align:middle}
+.tile .chip{width:clamp(9px,1.35vw,16px)}
 .board-center{grid-area:2/2/5/5;margin:2px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;align-items:center;gap:9px;background:repeating-linear-gradient(120deg,#ffffff03 0 1px,transparent 1px 5px),var(--felt);border-radius:5px;text-align:center}
 .stock{display:grid;justify-items:center;gap:3px;font-size:clamp(10px,1.3vw,15px)}
 .stock img{width:clamp(36px,6.7vw,96px);height:clamp(48px,8vw,105px);object-fit:contain}
@@ -89,6 +90,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 .rep input[type=number]{width:70px}
 .rep label{display:inline-flex;align-items:center;gap:5px}
 .notice{background:#393526;border:1px solid #9d8556;border-radius:6px;padding:8px;margin-block:7px}
+.recruitment-alert{position:sticky;top:8px;z-index:4;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;padding:9px 12px;box-shadow:0 4px 12px #0005}
+.recruitment-alert[data-targeted="true"]{background:#482e27;border-color:#f1ad81;color:#ffe1c4}
+.recruitment-alert .buttons{margin:0}
 .hand,.log{margin-top:12px}
 .hand-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 #hand{display:flex;gap:7px;overflow:auto;padding:4px}

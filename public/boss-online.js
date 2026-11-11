@@ -19,11 +19,34 @@ function button(action,label,attributes='',primary=false) {
   return '<button type="button" data-action="'+action+'" '+attributes+(primary?' class="primary"':'')+'>'+label+'</button>';
 }
 function chip(team) {
-  const [,shade,color,,symbol]=colors[team];
-  return '<span class="chip" style="--team:'+color+'" title="ทีมสี'+shade+'" aria-label="ทีมสี'+shade+'" role="img">'+symbol+'</span>';
+  const [color,shade]=colors[team];
+  const label='ทีมสี'+shade;
+  return '<img class="chip" src="'+art('cards','badge-'+color)+'" alt="'+label+'" title="'+label+'">';
 }
 function name(seat) { return escape(state.players[seat]?.name); }
 function canRespond() { return state.window && !state.window.passes.includes(state.seat); }
+function renderRecruitmentAlert() {
+  const alert=get('recruitment-alert');
+  const pending=state.window;
+  alert.hidden=pending?.kind!=='recruitment';
+  const message=get('recruitment-message');
+  if (alert.hidden) {
+    message.textContent='';
+    return;
+  }
+  const owner=state.owners[pending.target];
+  const targeted=owner===state.seat;
+  const ownerLabel=owner===null?'ป้ายว่าง':targeted?'ป้ายของคุณ':'ป้ายของ '+state.players[owner].name;
+  const text=state.players[pending.actor].name+' กำลังใช้ Recruitment ซื้อป้ายนักลงทุนสี'+colors[pending.target][1]+' · '+ownerLabel;
+  alert.dataset.targeted=String(targeted);
+  if (message.textContent!==text) message.textContent=text;
+  const stop=state.hand.find(card=>card.kind==='stop');
+  const actions=canRespond()
+    ? (stop?button('pick','ใช้ Stop','data-card="'+stop.id+'"',true):'')+button('pass','ผ่าน')
+    : '<small>กดผ่านแล้ว</small>';
+  const controls=get('recruitment-actions');
+  if (controls.innerHTML!==actions) controls.innerHTML=actions;
+}
 function canPlay(card) {
   if (state.window && state.window.kind!=='close') return canRespond() && card.kind==='stop';
   if (state.window && !canRespond()) return false;
@@ -127,8 +150,8 @@ function negotiation() {
   const window=state.window;
   const selected=state.reps.filter(rep=>choices.has(rep.id) && !rep.blocked);
   const committed=selected.reduce((sum,rep)=>sum+(rep.owner===state.boss?0:state.offers[rep.id]?.amount ?? 0),0);
-  const notice=window?'<div class="notice">'+(window.kind==='close'?'กำลังจะปิดดีล · '+window.choices.map(rep=>chip(rep.team)+' '+name(rep.owner)+' '+money(rep.amount)).join(' · '):
-    name(window.actor)+' เล่น '+({boss:'Boss',travel:'Travel',recruitment:'Recruitment'}[window.kind]))+
+  const notice=window && window.kind!=='recruitment'?'<div class="notice">'+(window.kind==='close'?'กำลังจะปิดดีล · '+window.choices.map(rep=>chip(rep.team)+' '+name(rep.owner)+' '+money(rep.amount)).join(' · '):
+    name(window.actor)+' เล่น '+({boss:'Boss',travel:'Travel'}[window.kind]))+
     ' <span id="time"></span>'+(canRespond()?'<div class="buttons">'+button('pass','ผ่าน')+'</div>':'')+'</div>':'';
   const groups=board[state.position].groups.map(group=>'<section class="deal-group"><strong>เลือก '+group.count+' ทีม</strong> '+group.teams.map(chip).join(' ')+
     group.teams.map(team=>{
@@ -170,8 +193,7 @@ function renderDeal() {
       (state.actor===state.seat?'<p>'+(state.rolled?'เปิดเจรจาที่ช่องนี้ หรือจั่วแล้วจบตา':'เปิดเจรจาที่ช่องนี้ หรือทอยเพื่อเดิน')+'</p><div class="buttons">'+
       button('open','เปิดเจรจา','',true)+(state.rolled?button('draw','จั่ว 3 ใบ'):button('roll','ทอยลูกเต๋า'))+'</div>':'<p>รอผู้เล่นเลือกทำรายการ</p>');
   } else if (state.phase==='discard') {
-    markup='<h1>ลดการ์ดในมือ</h1><p>'+(state.actor===state.seat?'เลือกการ์ดจากมือเพื่อทิ้งให้เหลือ 12 ใบ หรือใช้ Recruitment 3 ใบ':'รอ '+name(state.actor)+' ลดจำนวนการ์ด')+'</p>'+
-      (state.window?'<div class="notice">รอตอบโต้ Recruitment <span id="time"></span> '+(canRespond()?button('pass','ผ่าน'):'')+'</div>':'');
+    markup='<h1>ลดการ์ดในมือ</h1><p>'+(state.actor===state.seat?'เลือกการ์ดจากมือเพื่อทิ้งให้เหลือ 12 ใบ หรือใช้ Recruitment 3 ใบ':'รอ '+name(state.actor)+' ลดจำนวนการ์ด')+'</p>';
   } else markup=negotiation();
   const card=state.hand.find(entry=>entry.id===chosenCard);
   if (card && canPlay(card)) {
@@ -183,8 +205,10 @@ function renderDeal() {
   showTime();
 }
 function showTime() {
-  const node=get('time');
-  if (node && state.window) node.textContent='· '+Math.max(0,Math.ceil((state.window.until-Date.now())/1000))+' วินาที';
+  const pending=state?.window;
+  if (!pending) return;
+  const node=get(pending.kind==='recruitment'?'recruitment-time':'time');
+  if (node) node.textContent='· '+Math.max(0,Math.ceil((pending.until-Date.now())/1000))+' วินาที';
 }
 function inviteUrl(code) {
   const url=new URL(location.href);
@@ -229,6 +253,7 @@ function update(next) {
   }
   renderSeats();
   renderBoard(previous);
+  renderRecruitmentAlert();
   renderDeal();
   renderHand();
   get('log').innerHTML=next.log.map(line=>'<li>'+escape(line)+'</li>').join('');
