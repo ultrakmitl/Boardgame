@@ -59,7 +59,7 @@ function updateSelection() {
   }
   const submit = byId('submit-cards');
   submit.disabled = !selected.length;
-  submit.textContent = selected.length ? `ลงไพ่ ${selected.length} ใบ` : 'ลงไพ่';
+  submit.textContent = selected.length ? `ส่งไพ่ ${selected.length} ใบให้ตรวจ` : 'ส่งไพ่ให้ตรวจ';
 }
 
 function render(focus = true) {
@@ -67,20 +67,34 @@ function render(focus = true) {
   const keeper = game.players[game.keeper];
   byId('round').textContent = `รอบ ${game.round} / ${game.players.length}`;
   byId('board').hidden = game.phase === 'keeper';
-  byId('players').replaceChildren(...game.players.map((seat, index) =>
-    element('span', `${seat.name} · ${seat.score} คะแนน · ${index === game.keeper ? 'ผู้คุมกฎ' : `${seat.count ?? seat.hand.length} ใบ`}`,
-      index === game.keeper ? 'keeper' : index === game.turn ? 'current' : ''),
-  ));
+  byId('history').hidden = game.phase === 'keeper';
+  byId('players').replaceChildren(...game.players.map((seat, index) => {
+    const isKeeper = index === game.keeper;
+    const isCurrent = !isKeeper && game.phase !== 'keeper' && game.phase !== 'finished' && index === game.turn;
+    const row = element('div', '', isCurrent ? 'seat active-seat' : 'seat');
+    const name = element('div', '', 'seat-name');
+    const role = isKeeper ? 'ผู้คุมกฎ' : `${isCurrent ? 'กำลังเล่น · ' : ''}ไพ่ ${seat.count ?? seat.hand.length} ใบ`;
+    name.append(element('strong', seat.name), element('small', role));
+    row.append(name, element('span', `${seat.score} แต้ม`, 'seat-score'));
+    return row;
+  }));
   const trail = game.phase === 'keeper' ? [] : [game.clue, ...game.log.flatMap(record =>
     record.played ? [record.played] : record.accepted && !record.trade ? record.cards : [],
   )];
   const line = byId('last');
-  line.replaceChildren(...trail.map(card => cardFace(card)));
+  byId('clue-count').textContent = `${trail.length} ใบ`;
+  line.replaceChildren(...trail.map((card, index) => {
+    const tile = element('div', '', 'clue-tile');
+    const label = index === 0 ? 'ใบตั้งต้น' : index === trail.length - 1 ? 'ใบล่าสุด' : '';
+    tile.append(cardFace(card), element('small', label));
+    return tile;
+  }));
   line.scrollLeft = line.scrollWidth;
   const log = byId('log');
   log.replaceChildren(...game.log.slice().reverse().map(record => {
-    const item = element('details');
-    item.append(element('summary', `${record.name} · ${record.text}`));
+    const rejected = !record.accepted && !record.trade;
+    const item = element(rejected ? 'div' : 'details', '', rejected ? 'rejected-play' : '');
+    item.append(element(rejected ? 'strong' : 'summary', `${record.name} · ${record.text}`));
     const faces = element('div', '', 'log-cards');
     if (record.played) faces.append(element('p', 'ไพ่ที่ผู้คุมกฎลงให้'), cardFace(record.played));
     if (record.trade) faces.append(element('p', 'ไพ่ที่เปิดตอนขอเปลี่ยน'));
@@ -88,13 +102,7 @@ function render(focus = true) {
     item.append(faces);
     return item;
   }));
-  if (game.log.length) {
-    const initial = element('details');
-    initial.append(element('summary', 'ไพ่ตั้งต้น'), cardFace(game.clue));
-    log.append(initial);
-  } else {
-    log.append(element('p', 'ผลการลงไพ่จะปรากฏที่นี่'));
-  }
+  if (!game.log.length) log.append(element('p', 'ยังไม่มีการลงไพ่'));
 
   const title = byId('turn-title');
   const actions = byId('actions');
@@ -158,7 +166,7 @@ function render(focus = true) {
     actions.append(options);
   } else {
     title.textContent = `ตาของ ${player.name}`;
-    byId('notice').textContent = 'แตะไพ่ตามลำดับที่ต้องการลง';
+    byId('notice').textContent = 'เลือกไพ่ตามลำดับที่ต้องการลง';
     renderHand(actions, player, () => handToKeeper({ids: selected, trade: false}),
       () => handToKeeper({ids: [], trade: true}));
   }
@@ -168,8 +176,8 @@ function render(focus = true) {
 function renderHand(actions, player, submitPlay, submitTrade) {
   const hand = element('div', '', 'hand');
   hand.append(...player.hand.map(card => cardFace(card, true)));
-  const controls = element('div', '', 'controls');
-  const submit = button('ลงไพ่', submitPlay, true);
+  const controls = element('div', '', 'controls hand-controls');
+  const submit = button('ส่งไพ่ให้ตรวจ', submitPlay, true);
   submit.id = 'submit-cards';
   controls.append(submit, button('ขอเปลี่ยนไพ่ทั้งมือ', submitTrade));
   actions.append(hand, controls);
@@ -229,6 +237,13 @@ for (const [level, label] of levels.entries()) {
   list.append(...rules.filter(rule => rule.level === level).map(rule => element('li', rule.label)));
   catalog.append(element('h3', label), list);
 }
+byId('toggle-history').addEventListener('click', event => {
+  const log = byId('log');
+  log.hidden = !log.hidden;
+  event.currentTarget.setAttribute('aria-expanded', String(!log.hidden));
+  event.currentTarget.textContent = log.hidden ? 'แสดงประวัติ' : 'ซ่อนประวัติ';
+});
+
 byId('help').addEventListener('click', () => {
   catalog.parentElement.hidden = Boolean(game && game.phase !== 'finished');
   catalog.parentElement.open = false;
@@ -309,7 +324,7 @@ function renderOnlineActions(title, actions, player, keeper) {
     actions.append(options);
   } else {
     title.textContent = 'ตาของคุณ';
-    actions.append(element('p', 'แตะไพ่ตามลำดับที่ต้องการลง'));
+    actions.append(element('p', 'เลือกไพ่ตามลำดับที่ต้องการลง', 'hand-hint'));
     renderHand(actions, player, () => sendAction('play', {ids: selected}), () => sendAction('trade'));
     return;
   }

@@ -99,7 +99,8 @@ export function startGame(names, previous = null) {
   const keeper = previous ? (previous.keeper + 1) % names.length : 0;
   const round = previous ? previous.round + 1 : 1;
 
-  const [rule] = shuffle(rules.filter(candidate => candidate.id !== previous?.rule.id));
+  const usedRuleIds = previous?.usedRuleIds ?? [];
+  const [rule] = shuffle(rules.filter(candidate => !usedRuleIds.includes(candidate.id)));
   const draw = shuffle(deck);
   // A comparison rule begins with a neutral reference card.
   const clueIndex = rule.level === 2 ? 0 : draw.findIndex(card => rule.matches(card));
@@ -109,7 +110,7 @@ export function startGame(names, previous = null) {
       name, hand: index === keeper ? [] : draw.splice(0, 7),
       score: previous?.players[index]?.score ?? 0, roundScore: 0,
     })),
-    rule, choices: [], keeper, round,
+    rule, choices: [], keeper, round, usedRuleIds: [...usedRuleIds, rule.id],
     draw, discard: [], clue, last: clue, log: [],
     turn: (keeper + 1) % names.length, phase: 'keeper', winner: null, matchWinners: [],
   };

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ใครไม่รู้ · I Know… You Don’t</title>
-  <link rel="stylesheet" href="/know.css?v=5">
-  <script type="module" src="/know.js?v=6"></script>
+  <link rel="stylesheet" href="/know.css?v=7">
+  <script type="module" src="/know.js?v=8"></script>
 </head>
 <body>
   <header><a href="/">← โต๊ะเกม</a><button id="help" type="button">วิธีเล่น</button></header>
@@ -54,19 +54,35 @@
       </div>
     </section>
     <section id="game" hidden>
-      <div class="table-head"><div><p id="round" class="round"></p><h1>ใครไม่รู้<span>?</span></h1></div><button id="leave" type="button">กลับหน้าเริ่ม</button></div>
-      <div id="players" class="players" aria-label="จำนวนไพ่ของผู้เล่น"></div>
-      <div class="board" id="board">
-        <section class="clue"><h2 id="clue-title">แนวไพ่ที่ผ่าน</h2><div id="last" class="clue-line" tabindex="0" aria-label="แนวไพ่จากใบตั้งต้นถึงใบล่าสุด"></div></section>
-        <section class="history"><h2>ผลการลงไพ่</h2><div id="log"></div></section>
+      <div class="table-head game-heading"><h1>ใครไม่รู้?</h1><p id="round" class="round"></p><button id="leave" type="button">กลับหน้าเริ่ม</button></div>
+      <div class="game-layout">
+        <aside class="game-sidebar">
+        <section class="seat-panel" aria-labelledby="seat-title">
+          <h2 id="seat-title">ผู้เล่นและคะแนน</h2>
+          <div id="players" class="players"></div>
+        </section>
+        <section class="history" id="history" aria-labelledby="history-title">
+          <div class="history-heading">
+            <h2 id="history-title">ประวัติการลงไพ่</h2>
+            <button id="toggle-history" type="button" aria-controls="log" aria-expanded="true">ซ่อนประวัติ</button>
+          </div>
+          <div id="log"></div>
+        </section>
+        </aside>
+        <div class="game-table">
+        <section class="board" id="board" aria-labelledby="clue-title">
+          <div class="board-heading"><h2 id="clue-title">ไพ่ที่ผ่านกฎ</h2><span id="clue-count"></span></div>
+          <div id="last" class="clue-line" tabindex="0" aria-label="แนวไพ่จากใบตั้งต้นถึงใบล่าสุด"></div>
+        </section>
+        <section class="turn"><h2 id="turn-title" tabindex="-1"></h2><p id="notice" role="status"></p><div id="actions"></div></section>
+        </div>
       </div>
-      <section class="turn"><h2 id="turn-title" tabindex="-1"></h2><p id="notice" role="status"></p><div id="actions"></div></section>
     </section>
   </main>
   <dialog id="instructions">
     <h2>วิธีเล่น</h2>
     <ol>
-      <li>แต่ละรอบมีผู้คุมกฎ 1 คน เปิดกฎลับดูคนเดียว ผู้เล่นที่เหลือได้ไพ่คนละ 7 ใบ กฎที่เทียบกับใบก่อนหน้าใช้ไพ่ตั้งต้นเป็นใบอ้างอิง เมื่อเริ่มรอบถัดไปจะเปลี่ยนผู้คุมกฎตามลำดับและสุ่มกฎใหม่จากทุกหมวด</li>
+      <li>แต่ละรอบมีผู้คุมกฎ 1 คน เปิดกฎลับดูคนเดียว ผู้เล่นที่เหลือได้ไพ่คนละ 7 ใบ กฎที่เทียบกับใบก่อนหน้าใช้ไพ่ตั้งต้นเป็นใบอ้างอิง เมื่อเริ่มรอบถัดไปจะเปลี่ยนผู้คุมกฎตามลำดับและสุ่มกฎที่ยังไม่เคยใช้ในเกมนี้จากทุกหมวด</li>
       <li>เมื่อถึงตา เลือกไพ่ตามลำดับที่อยากลง แล้วส่งให้ผู้คุมกฎตรวจ หากมีใบใดไม่ผ่านจะได้ไพ่คืนทั้งหมด</li>
       <li>ถ้าคิดว่าไม่มีไพ่ที่ผ่าน ให้ขอเปลี่ยนไพ่ทั้งมือ ถ้าคิดถูกจะได้ไพ่ใหม่ลดลง 1 ใบ ถ้ามีไพ่ที่ผ่าน ผู้คุมกฎจะเลือกลงให้ 1 ใบและจั่วมาทดแทน</li>
       <li>คนแรกที่ไพ่หมดได้เลือกกฎลับจาก 3 ตัวเลือก ตอบผิดส่งสิทธิ์ให้คนถัดไป คนแรกที่ตอบถูกได้ 1 คะแนนและจบรอบ</li>

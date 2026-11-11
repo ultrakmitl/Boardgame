@@ -48,7 +48,7 @@ textarea { resize: vertical; min-height: 100px; }
 .players .current { background: var(--ink); color: var(--cream); }
 .board { display: grid; grid-template-columns: minmax(0, 1fr); background: repeating-linear-gradient(135deg,#ffffff04 0 1px,transparent 1px 5px), #263e33; border: 1px solid #1d2f26; box-shadow: 0 5px 0 #182b22; color: #fff8e8; border-radius: 18px; padding: clamp(12px, 3vw, 24px); gap: 16px; }
 .history { min-width: 0; }
-#log { max-height: 216px; overflow: auto; overflow-wrap: anywhere; }
+#log { overflow-wrap: anywhere; }
 #log details { padding: 6px 0; border-top: 1px solid #6d8177; }
 summary { cursor: pointer; }
 .log-cards, .hand { display: flex; gap: 8px; flex-wrap: wrap; margin-block: 10px; }
@@ -105,3 +105,65 @@ dialog form { margin-top: 12px; }
 #online-room { padding-top: 20px; }
 #invite-link { color: inherit; }
 #connection { color: var(--red); }
+.game-heading { justify-content: flex-start; margin-bottom: 18px; }
+.game-heading h1 { font-size: clamp(26px, 4vw, 39px); }
+.game-heading .round { margin: 0; color: #414c5e; font-size: .9rem; }
+.game-heading #leave { margin-inline-start: auto; font-size: .9rem; }
+.game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 255px; gap: 20px; align-items: start; }
+.game-table { grid-column: 1; grid-row: 1; min-width: 0; }
+.game-sidebar { grid-column: 2; grid-row: 1; min-width: 0; }
+.game-layout h2 { margin: 0 0 10px; }
+.game-layout .board {
+  background: repeating-linear-gradient(135deg, #ffffff06 0 1px, transparent 1px 5px), #202d48;
+  border: 1px solid #202d48;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 #162137;
+  padding: 16px;
+  gap: 8px;
+}
+.board-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.board-heading span, .clue-tile > small { color: #e5decc; font-size: .78rem; }
+.board-heading h2 { margin-bottom: 0; }
+.clue-tile { flex: 0 0 auto; text-align: center; }
+.clue-tile > small { display: block; min-height: 1.25em; margin-top: 6px; }
+.clue-tile .card { width: clamp(78px, 8vw, 102px); }
+.seat-panel, .game-layout .history {
+  background: #fcfaf4;
+  border: 1px solid #d8cebc;
+  border-radius: 12px;
+  padding: 14px;
+}
+.game-layout .history { margin-top: 14px; }
+.history-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 10px; }
+.game-layout .history-heading h2 { margin: 0; }
+#toggle-history { font-size: .8rem; padding: 4px 8px; }
+.rejected-play { border-top: 1px solid #e0d7c8; padding: 6px 0; font-size: .88rem; }
+.rejected-play > strong { color: #8c2a23; }
+.game-layout #log p { margin: 0; color: #565061; }
+.game-layout #log details { border-color: #e0d7c8; font-size: .88rem; }
+.game-layout .log-cards .card { width: 82px; }
+#players { display: grid; gap: 5px; margin: 0; }
+.seat { display: flex; justify-content: space-between; align-items: start; gap: 8px; border-left: 3px solid transparent; padding: 6px 8px; }
+.seat.active-seat { background: #ffedbd; border-color: #966316; border-radius: 4px; }
+.seat-name { min-width: 0; overflow-wrap: anywhere; }
+.seat-name strong, .seat-name small { display: block; }
+.seat-name small { color: #5a5260; }
+#players .seat-score { color: #26354c; white-space: nowrap; font-size: .84rem; font-weight: 700; background: transparent; border: 0; border-radius: 0; padding: 0; }
+.game-layout .turn { margin-top: 16px; border-color: #cfc2ad; background: #fcfaf4; border-radius: 12px; }
+.game-table .board[hidden] + .turn { margin-top: 0; }
+.game-layout .turn h2 { color: #202d48; font-size: clamp(22px, 3vw, 29px); margin-bottom: 4px; }
+.game-layout #notice, .hand-hint { margin: 0 0 10px; color: #52495a; }
+.game-layout .hand { gap: 10px; margin-block: 10px 14px; }
+.game-layout .hand .card { width: clamp(86px, 8.2vw, 104px); }
+.hand-controls { border-top: 1px solid #e1d7c5; padding-top: 12px; }
+.hand-controls button { min-height: 44px; }
+.animal-1 { background-size: 200% 212%; }
+@media (max-width: 760px) {
+  .game-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .game-sidebar, .game-table { display: contents; }
+  .seat-panel { grid-row: 1; }
+  .game-layout .board { grid-row: 2; }
+  .game-layout .turn { grid-row: 3; margin: 0; }
+  .game-layout .history { grid-row: 4; margin: 0; }
+  #players { grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); }
+}
