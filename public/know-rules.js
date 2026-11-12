@@ -90,7 +90,7 @@ export function shuffle(items) {
   return result;
 }
 
-function nextGuesser(game) {
+export function nextPlayer(game) {
   const next = (game.turn + 1) % game.players.length;
   return next === game.keeper ? (next + 1) % game.players.length : next;
 }
@@ -203,7 +203,7 @@ export function playTurn(game, ids, trade = false, keeperPick = null) {
     game.choices = shuffle([game.rule, ...decoys.slice(0, 2)]);
     game.phase = 'guess';
   }
-  else game.turn = nextGuesser(game);
+  else game.turn = nextPlayer(game);
 }
 
 export function guessRule(game, id) {
@@ -217,12 +217,16 @@ export function guessRule(game, id) {
       player.score += player.roundScore;
     }
     game.winner = game.players[game.turn].name;
-    game.phase = 'finished';
-    if (game.round === game.players.length) {
-      const bestScore = Math.max(...game.players.map(player => player.score));
-      game.matchWinners = game.players.filter(player => player.score === bestScore).map(player => player.name);
-    }
+    finishRound(game);
   } else {
-    game.turn = nextGuesser(game);
+    game.turn = nextPlayer(game);
+  }
+}
+
+function finishRound(game) {
+  game.phase = 'finished';
+  if (game.round === game.players.length) {
+    const bestScore = Math.max(...game.players.map(player => player.score));
+    game.matchWinners = game.players.filter(player => player.score === bestScore).map(player => player.name);
   }
 }

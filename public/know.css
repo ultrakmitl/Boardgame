@@ -34,11 +34,6 @@ h1 span { color: var(--red); }
 h2 { font-size: 1.2rem; margin: 0 0 10px; }
 .stats { color: #734c35; font-weight: bold; margin-bottom: 22px; }
 .stats span { padding-inline: 3px; }
-#setup { display: grid; gap: 12px; max-width: 380px; }
-#setup label { display: grid; gap: 4px; }
-#setup label small { color: #684d3f; }
-textarea { resize: vertical; min-height: 100px; }
-#error { color: var(--red); margin: 0; }
 .poster { display: block; width: 100%; padding: 6%; border-radius: 48% 48% 18px 18px; background: #e0bb70; border: 2px solid var(--ink); box-shadow: 6px 7px 0 var(--ink); }
 #game { padding-block: 24px 40px; }
 .table-head, .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
@@ -94,20 +89,17 @@ dialog form { margin-top: 12px; }
 
 .clue-line { display: flex; gap: 8px; overflow-x: auto; padding: 3px 4px 9px; }
 
-#online-setup { display: grid; gap: 12px; max-width: 380px; }
+#online-setup { display: grid; gap: 12px; max-width: 550px; }
 #online-setup label { display: grid; gap: 4px; }
 #online-setup input { font: inherit; min-width: 0; padding: .45rem .8rem; color: inherit; background: var(--cream); border: 1px solid var(--ink); border-radius: 8px; }
 #online-setup .controls, #online-room .controls { margin-top: 0; }
 #room-code { text-transform: uppercase; }
-.local-mode { margin-top: 20px; }
-.local-mode form { margin-top: 12px; }
 #online-room { padding-top: 20px; }
 #invite-link { color: inherit; }
 #connection { color: var(--red); }
 .game-heading { justify-content: flex-start; margin-bottom: 18px; }
 .game-heading h1 { font-size: clamp(26px, 4vw, 39px); }
 .game-heading .round { margin: 0; color: #414c5e; font-size: .9rem; }
-.game-heading #leave { margin-inline-start: auto; font-size: .9rem; }
 .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 255px; gap: 20px; align-items: start; }
 .game-table { grid-column: 1; grid-row: 1; min-width: 0; }
 .game-sidebar { grid-column: 2; grid-row: 1; min-width: 0; }
@@ -194,3 +186,20 @@ dialog form { margin-top: 12px; }
 .keeper-options { max-width: 610px; }
 .keeper-options button { min-height: 48px; }
 .game-layout .clue-picker { max-height: 375px; overflow: auto; padding: 4px 5px 8px; }
+
+.entry-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.entry-option { display: flex; flex-direction: column; gap: 8px; padding: 14px; background: #fcfaf4; border: 1px solid #d8cebc; border-radius: 12px; min-width: 0; }
+.entry-option h2, .entry-option p { margin: 0; }
+.entry-option p, .entry-option label { font-size: .85rem; }
+.entry-option button { margin-top: auto; min-height: 44px; }
+#online-room .room-settings { margin-top: 12px; padding: 10px 12px; background: #e8edf6; border-radius: 8px; }
+#round-minutes { width: 4em; padding: 4px; font: inherit; text-align: center; }
+#round-clock { margin-inline-start: auto; padding: 5px 12px; background: #202d48; color: #fff; border-radius: 8px; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+#round-clock.urgent { background: #8c2a23; }
+#waiting-seats { display: grid; max-width: 520px; }
+.waiting-seat { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #e0d7c8; overflow-wrap: anywhere; }
+.kick-button { font-size: .75rem; color: #8c2a23; padding: 3px 7px; border-color: #bd8c80; white-space: nowrap; }
+.seat-name .kick-button { margin-top: 5px; }
+@media (max-width: 420px) {
+  .entry-options { grid-template-columns: 1fr; }
+}

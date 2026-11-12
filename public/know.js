@@ -1,15 +1,14 @@
-import {animals, colors, levels, rules, startGame, selectRule, clueOptions, beginRound, playTurn, guessRule} from './know-rules.js';
+import {animals, colors, levels, rules} from './know-rules.js';
 
 const byId = id => document.getElementById(id);
 let game;
-let open = false;
 let selected = [];
 let feedback = '';
-let pending = null;
 let session = null;
 let remote = null;
 let busy = false;
 let polling = false;
+let deadlineAt = null;
 const storageKey = 'know-online-session';
 
 function element(tag, text, className) {
@@ -66,7 +65,7 @@ function updateSelection() {
   submit.textContent = selected.length ? `ส่งไพ่ ${selected.length} ใบให้ตรวจ` : 'ส่งไพ่ให้ตรวจ';
 }
 
-function render(focus = true) {
+function render() {
   const player = game.players[game.turn];
   const keeper = game.players[game.keeper];
   byId('round').textContent = `รอบ ${game.round} / ${game.players.length}`;
@@ -79,6 +78,7 @@ function render(focus = true) {
     const name = element('div', '', 'seat-name');
     const role = isKeeper ? 'ผู้คุมกฎ' : `${isCurrent ? 'กำลังเล่น · ' : ''}ไพ่ ${seat.count ?? seat.hand.length} ใบ`;
     name.append(element('strong', seat.name), element('small', role));
+    if (remote.host && index > 0) name.append(kickButton(seat.name, index));
     row.append(name, element('span', `${seat.score} แต้ม`, 'seat-score'));
     return row;
   }));
@@ -94,10 +94,7 @@ function render(focus = true) {
     return tile;
   }));
   line.scrollLeft = line.scrollWidth;
-  const submission = remote ? remote.submission : pending && pending.guess === undefined && {
-    trade: pending.trade,
-    cards: pending.trade ? player.hand : pending.ids.map(id => player.hand.find(card => card.id === id)),
-  };
+  const submission = remote.submission;
   byId('submission').hidden = !submission;
   byId('submission-title').textContent = submission
     ? `${player.name} ${submission.trade ? 'เปิดไพ่ทั้งมือ' : 'ลงไพ่'} ${submission.cards.length} ใบ · รอตรวจ`
@@ -111,63 +108,9 @@ function render(focus = true) {
   byId('notice').textContent = feedback;
   if (game.phase === 'finished') {
     renderResult(title, actions);
-  } else if (remote) {
-    renderOnlineActions(title, actions, player, keeper);
-  } else if (game.phase === 'keeper' || pending) {
-    title.textContent = open ? `${keeper.name} · ผู้คุมกฎ` : `ส่งเครื่องให้ ${keeper.name}`;
-    if (!open) {
-      byId('notice').textContent = 'ให้ผู้คุมกฎดูหน้าจอคนเดียว';
-      actions.append(button('เปิดหน้าผู้คุมกฎ', () => { open = true; render(); }, true));
-    } else if (game.phase === 'keeper') {
-      renderKeeperSetup(actions);
-    } else {
-      actions.append(element('p', game.rule.label, 'secret-rule'));
-      if (pending.guess !== undefined) {
-        const choice = game.choices.find(rule => rule.id === pending.guess);
-        actions.append(element('p', `${player.name} เลือก “${choice.label}”`));
-        actions.append(button('ยืนยันผลการทายและซ่อนกฎ', () => {
-          guessRule(game, choice.id);
-          endTurn(game.phase === 'finished' ? '' : `${player.name} ตอบยังไม่ถูก ส่งสิทธิ์ให้คนถัดไป`);
-        }, true));
-      } else {
-        const controls = element('div', '', 'controls');
-        if (pending.trade) {
-          const passing = submission.cards.filter(card => game.rule.matches(card, game.last));
-          if (passing.length) {
-            passing.forEach(card => {
-              const label = `ลง ${colors[card.color]} ${card.number} · ${animals[card.animal]}`;
-              controls.append(button(label, () => resolvePlay(card.id), true));
-            });
-          } else {
-            controls.append(button('ยืนยันว่าไม่มีไพ่ที่ผ่าน', () => resolvePlay(), true));
-          }
-        } else {
-          controls.append(button('ตรวจไพ่และซ่อนกฎ', () => resolvePlay(), true));
-        }
-        actions.append(controls);
-      }
-    }
-  } else if (!open) {
-    title.textContent = `ส่งเครื่องให้ ${player.name}`;
-    actions.append(button(game.phase === 'guess' ? 'เปิดตัวเลือกกฎ' : 'เปิดไพ่ของฉัน', () => {
-      open = true;
-      feedback = '';
-      render();
-    }, true));
-  } else if (game.phase === 'guess') {
-    title.textContent = `${player.name} คิดว่ากฎลับคือข้อไหน?`;
-    const options = element('div', '', 'options');
-    options.append(...game.choices.map(rule => button(rule.label, () => {
-      handToKeeper({guess: rule.id});
-    })));
-    actions.append(options);
   } else {
-    title.textContent = `ตาของ ${player.name}`;
-    byId('notice').textContent = 'เลือกไพ่ตามลำดับที่ต้องการลง';
-    renderHand(actions, player, () => handToKeeper({ids: selected, trade: false}),
-      () => handToKeeper({ids: [], trade: true}));
+    renderOnlineActions(title, actions, player, keeper);
   }
-  if (focus) title.focus();
 }
 
 function renderHand(actions, player, submitPlay, submitTrade) {
@@ -181,52 +124,12 @@ function renderHand(actions, player, submitPlay, submitTrade) {
   updateSelection();
 }
 
-function handToKeeper(action) {
-  pending = action;
-  open = false;
-  feedback = '';
-  render();
-}
-
-function resolvePlay(keeperPick = null) {
-  playTurn(game, pending.ids, pending.trade, keeperPick);
-  const record = game.log.at(-1);
-  endTurn(`${record.name} · ${record.text}`);
-}
-
-function endTurn(message) {
-  pending = null;
-  open = false;
-  selected = [];
-  feedback = message;
-  render();
-}
-
 function lobby() {
   game = undefined;
   byId('game').hidden = true;
   byId('lobby').hidden = false;
-  byId('names').focus();
+  byId('online-name').focus();
 }
-
-byId('setup').addEventListener('submit', event => {
-  event.preventDefault();
-  const names = byId('names').value.split(/\r?\n/).map(name => name.trim()).filter(Boolean);
-  const error = byId('error');
-  if (names.length < 3 || names.length > 7 || new Set(names).size !== names.length || names.some(name => name.length > 24)) {
-    error.textContent = 'กรอกชื่อไม่ซ้ำกัน 3–7 คน ชื่อละไม่เกิน 24 ตัวอักษร';
-    error.hidden = false;
-    return;
-  }
-  error.hidden = true;
-  game = startGame(names);
-  byId('lobby').hidden = true;
-  byId('game').hidden = false;
-  endTurn('');
-});
-byId('leave').addEventListener('click', () => {
-  if (game.phase === 'finished' || window.confirm('จบรอบนี้และกลับหน้าเริ่มหรือไม่?')) lobby();
-});
 
 const catalog = byId('rule-list');
 for (const [level, label] of levels.entries()) {
@@ -312,51 +215,33 @@ function renderResult(title, actions) {
   actions.append(rule, scores);
 
   const label = matchOver ? 'เริ่มเกมใหม่' : 'เริ่มรอบถัดไป';
-  if (remote && !remote.host) {
-    actions.append(element('p', `รอเจ้าของห้อง${label}`));
-  } else {
-    actions.append(button(label, () => {
-      if (remote) {
-        sendAction(matchOver ? 'rematch' : 'next');
-      } else {
-        game = startGame(game.players.map(seat => seat.name), matchOver ? null : game);
-        endTurn('');
-      }
-    }, true));
-  }
+  if (remote.host) actions.append(button(label, () => sendAction(matchOver ? 'rematch' : 'next'), true));
+  else actions.append(element('p', 'รอเจ้าของห้อง' + label));
 }
 
 function renderKeeperSetup(actions) {
   if (!game.rule) {
     actions.append(element('h3', 'เลือกกฎลับ 1 จาก 3 ใบ'));
     const options = element('div', '', 'options keeper-options');
-    const available = remote ? remote.setup.rules : game.ruleOptions;
+    const available = remote.setup.rules;
     for (const rule of available) {
       options.append(button(rule.label, () => {
-        if (remote) sendAction('choose-rule', {ruleId: rule.id});
-        else {
-          selectRule(game, rule.id);
-          render();
-        }
+        sendAction('choose-rule', {ruleId: rule.id});
       }));
     }
     actions.append(options);
     return;
   }
 
-  const cards = remote ? remote.setup.cards : clueOptions(game);
-  const reference = remote ? remote.setup.reference : game.rule.level === 2;
+  const cards = remote.setup.cards;
+  const reference = remote.setup.reference;
   actions.append(element('p', game.rule.label, 'secret-rule'),
     element('h3', `เลือกไพ่ตั้งต้นจากกองจั่ว (${cards.length} ใบ)`),
     element('p', reference ? 'กฎนี้เทียบกับใบก่อนหน้า ไพ่ที่เลือกจะเป็นใบอ้างอิง' : 'แสดงเฉพาะไพ่ที่ผ่านกฎลับ', 'hand-hint'),
     element('p', 'กดไพ่ 1 ใบเพื่อเปิดให้ทุกคนเห็นและเริ่มรอบ', 'hand-hint'));
   const tray = element('div', '', 'hand clue-picker');
   tray.append(...cards.map(card => cardFace(card, false, cardId => {
-    if (remote) sendAction('begin', {cardId});
-    else {
-      beginRound(game, cardId);
-      endTurn('');
-    }
+    sendAction('begin', {cardId});
   })));
   actions.append(tray);
 }
@@ -445,8 +330,31 @@ function roomPath(current) {
   return '/api/know/room?code=' + encodeURIComponent(current.code);
 }
 
+function updateClock() {
+  const clock = byId('round-clock');
+  clock.hidden = deadlineAt === null;
+  if (deadlineAt === null) return;
+  const seconds = Math.max(0, Math.ceil((deadlineAt - performance.now()) / 1000));
+  clock.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  clock.classList.toggle('urgent', seconds <= 30);
+}
+
+function kickButton(name, seat) {
+  const remove = button('นำออก', () => {
+    const suffix = game ? ' เกมนี้จะจบและทุกคนจะกลับไปห้องรอ' : '';
+    if (window.confirm(`นำ ${name} ออกจากห้องหรือไม่?${suffix}`)) sendAction('kick', {seat});
+  });
+  remove.className = 'kick-button';
+  remove.setAttribute('aria-label', `นำ ${name} ออกจากห้อง`);
+  return remove;
+}
+
 function displayRoom(state) {
+  if (remote && state.revision < remote.revision) return;
+  deadlineAt = state.deadline === null ? null : performance.now() + state.deadline - state.now;
+  updateClock();
   if (remote && state.revision <= remote.revision) return;
+  if (state.minutes !== remote?.minutes) byId('round-minutes').value = state.minutes;
   remote = state;
   game = state.game;
   feedback = state.notice;
@@ -454,14 +362,19 @@ function displayRoom(state) {
   byId('waiting-room').hidden = Boolean(game);
   byId('disconnect').hidden = Boolean(game);
   byId('game').hidden = !game;
-  byId('leave').hidden = true;
+  byId('round-settings').hidden = !state.host || game?.phase === 'play' || game?.phase === 'guess';
   if (game) {
-    render(false);
+    render();
     return;
   }
-  byId('waiting-seats').replaceChildren(...state.seats.map((name, index) =>
-    element('span', index === 0 ? `${name} · เจ้าของห้อง` : name)));
-  byId('waiting-note').textContent = `${state.seats.length}/7 คน · เริ่มได้เมื่อมีอย่างน้อย 3 คน`;
+  byId('waiting-seats').replaceChildren(...state.seats.map((name, index) => {
+    const row = element('div', '', 'waiting-seat');
+    row.append(element('strong', index === 0 ? `${name} · เจ้าของห้อง` : name));
+    if (state.host && index > 0) row.append(kickButton(name, index));
+    return row;
+  }));
+  const count = `${state.seats.length}/7 คน · ส่งไพ่ภายใน ${state.minutes} นาทีต่อตา`;
+  byId('waiting-note').textContent = state.notice ? `${state.notice} · ${count}` : count;
   byId('start-online').hidden = !state.host;
   byId('start-online').disabled = state.seats.length < 3;
 }
@@ -481,10 +394,10 @@ function attach(current) {
 function detach(message = '') {
   session = null;
   remote = null;
+  deadlineAt = null;
   sessionStorage.removeItem(storageKey);
   byId('online-room').hidden = true;
   byId('waiting-room').hidden = true;
-  byId('leave').hidden = false;
   lobby();
   connection(message);
 }
@@ -510,7 +423,7 @@ async function sync(action, fields = {}) {
     if (action || !busy) connection('');
   } catch (error) {
     if (session !== current) return;
-    if (error.status === 401) detach(error.message);
+    if (error.status === 401) detach('คุณออกจากห้องแล้ว หรือห้องหมดอายุ');
     else connection(error.status ? error.message : 'เชื่อมต่อห้องไม่ได้ กำลังลองใหม่');
   } finally {
     if (action) busy = false;
@@ -521,6 +434,13 @@ async function sync(action, fields = {}) {
 function sendAction(action, fields) {
   return sync(action, fields);
 }
+
+byId('online-setup').addEventListener('keydown', event => {
+  if (event.key !== 'Enter' || event.isComposing || event.target.tagName !== 'INPUT') return;
+  event.preventDefault();
+  const mode = byId('room-code').value.trim() ? 'join' : 'create';
+  event.currentTarget.requestSubmit(event.currentTarget.querySelector(`button[value="${mode}"]`));
+});
 
 byId('online-setup').addEventListener('submit', async event => {
   event.preventDefault();
@@ -544,6 +464,10 @@ byId('online-setup').addEventListener('submit', async event => {
 });
 
 byId('start-online').addEventListener('click', () => sendAction('start'));
+byId('round-settings').addEventListener('submit', event => {
+  event.preventDefault();
+  sendAction('set-time', {minutes: byId('round-minutes').valueAsNumber});
+});
 byId('disconnect').addEventListener('click', () => sendAction('leave'));
 byId('copy-invite').addEventListener('click', async () => {
   try {
@@ -562,3 +486,4 @@ if (saved?.code === inviteCode && saved.token) {
   sync();
 }
 setInterval(() => sync(), 900);
+setInterval(updateClock, 250);

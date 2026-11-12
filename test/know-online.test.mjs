@@ -78,3 +78,43 @@ test('online room isolates hands, the secret rule and submissions through two ro
   assert.equal(read(0).game.rule, null);
   assert(read(1).setup.rules.every(option => option.label !== secret));
 });
+
+test('each card turn gets a fresh deadline and keeper review stops the clock', t => {
+  let now = Date.now();
+  t.mock.method(Date, 'now', () => now);
+  const host = knowEnter({name: 'Host', create: true});
+  const {code} = host;
+  const sessions = [host, ...['B', 'C'].map(name => knowEnter({name, code}))];
+  const auth = index => 'Bearer ' + sessions[index].token;
+  const read = index => knowRoom(code, auth(index));
+  const act = (index, action, fields = {}) =>
+    knowRoom(code, auth(index), {action, revision: read(index).revision, ...fields});
+
+  act(0, 'set-time', {minutes: 1});
+  act(0, 'start');
+  act(0, 'choose-rule', {ruleId: read(0).setup.rules[0].id});
+  act(0, 'begin', {cardId: read(0).setup.cards[0].id});
+  const first = read(1);
+  assert.equal(first.deadline, now + 60000);
+  const hand = first.game.players[1].hand;
+
+  now = first.deadline;
+  assert.throws(() => knowRoom(code, auth(1), {
+    action: 'play', revision: first.revision, ids: [hand[0].id],
+  }));
+  const second = read(2);
+  assert.equal(second.game.turn, 2);
+  assert.equal(second.game.phase, 'play');
+  assert.equal(second.deadline, now + 60000);
+  assert.deepEqual(read(1).game.players[1].hand, hand);
+
+  now += 59000;
+  act(2, 'trade');
+  assert.equal(read(1).deadline, null);
+  now += 120000;
+  assert.equal(read(0).game.turn, 2);
+  assert(read(0).pending);
+  act(0, 'resolve');
+  assert.equal(read(1).game.turn, 1);
+  assert.equal(read(1).deadline, now + 60000);
+});

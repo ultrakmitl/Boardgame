@@ -1,12 +1,22 @@
 import {randomBytes} from 'node:crypto';
-import {startGame, selectRule, clueOptions, beginRound, playTurn, guessRule} from '../public/know-rules.js';
+import {startGame, selectRule, clueOptions, beginRound, playTurn, guessRule, nextPlayer} from '../public/know-rules.js';
 
 const rooms = new Map();
 const reject = () => { throw Error('คำสั่งนี้ใช้ไม่ได้ในตอนนี้'); };
 
+function expireTurn(room, now) {
+  if (room.deadline === null || now < room.deadline) return;
+  const {game} = room;
+  room.notice = `${game.players[game.turn].name} หมดเวลาส่งไพ่ · ข้ามตา`;
+  game.turn = nextPlayer(game);
+  room.deadline = now + room.minutes * 60000;
+  room.revision++;
+}
+
 export function maintainKnowRooms(now) {
   for (const [code, room] of rooms) {
     if (now - room.updated > 3600000) rooms.delete(code);
+    else expireTurn(room, now);
   }
 }
 
@@ -18,7 +28,7 @@ export function knowEnter(input) {
     if (rooms.size >= 500) throw Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
     let code;
     do { code = randomBytes(4).toString('hex').toUpperCase(); } while (rooms.has(code));
-    room = {code, seats: [], revision: 0, game: null, pending: null, notice: ''};
+    room = {code, seats: [], revision: 0, game: null, pending: null, notice: '', minutes: 5, deadline: null};
     rooms.set(code, room);
   }
   if (!room) throw Error('ไม่พบห้องนี้');
@@ -31,10 +41,24 @@ export function knowEnter(input) {
   return {code: room.code, token};
 }
 
-function act(room, me, input) {
+function act(room, me, input, now) {
   if (input.revision !== room.revision) throw Error('สถานะห้องเปลี่ยนแล้ว ลองอีกครั้ง');
   const {game, pending} = room;
   switch (input.action) {
+    case 'set-time':
+      if (me !== 0 || game?.phase === 'play' || game?.phase === 'guess' || !Number.isInteger(input.minutes) ||
+          input.minutes < 1 || input.minutes > 30) reject();
+      room.minutes = input.minutes;
+      break;
+    case 'kick': {
+      if (me !== 0 || !Number.isInteger(input.seat) || input.seat < 1 || input.seat >= room.seats.length) reject();
+      const [removed] = room.seats.splice(input.seat, 1);
+      room.game = null;
+      room.pending = null;
+      room.deadline = null;
+      room.notice = `${removed.name} ออกจากห้องแล้ว`;
+      break;
+    }
     case 'start':
       if (me !== 0 || game || room.seats.length < 3) reject();
       room.game = startGame(room.seats.map(seat => seat.name));
@@ -56,6 +80,7 @@ function act(room, me, input) {
     case 'begin':
       if (game?.phase !== 'keeper' || me !== game.keeper) reject();
       beginRound(game, input.cardId);
+      room.deadline = now + room.minutes * 60000;
       break;
     case 'play':
     case 'trade':
@@ -72,6 +97,7 @@ function act(room, me, input) {
         if (!Array.isArray(ids) || (!trade && !ids.length) || ids.length > hand.length ||
             new Set(ids).size !== ids.length || !ids.every(id => hand.some(card => card.id === id))) reject();
         room.pending = {ids, trade};
+        room.deadline = null;
       }
       room.notice = '';
       break;
@@ -86,6 +112,7 @@ function act(room, me, input) {
         const pick = input.pick ?? null;
         if (pick !== null && (!pending.trade || !Number.isInteger(pick))) reject();
         playTurn(game, pending.ids, pending.trade, pick);
+        if (game.phase === 'play') room.deadline = now + room.minutes * 60000;
         const record = game.log.at(-1);
         room.notice = `${record.name} · ${record.text}`;
       }
@@ -97,10 +124,11 @@ function act(room, me, input) {
   room.revision++;
 }
 
-function view(room, me) {
+function view(room, me, now) {
   const {game, pending} = room;
   const state = {
     revision: room.revision, me, host: me === 0, notice: room.notice,
+    minutes: room.minutes, deadline: room.deadline, now,
     seats: room.seats.map(seat => seat.name),
   };
   if (!game) return state;
@@ -144,6 +172,8 @@ export function knowRoom(code, authorization, input = null) {
   const room = rooms.get(code);
   const me = room?.seats.findIndex(seat => 'Bearer ' + seat.token === authorization) ?? -1;
   if (me < 0) return null;
+  const now = Date.now();
+  expireTurn(room, now);
   if (input?.action === 'leave') {
     if (room.game) reject();
     room.seats.splice(me, 1);
@@ -151,7 +181,7 @@ export function knowRoom(code, authorization, input = null) {
     if (!room.seats.length) rooms.delete(code);
     return {left: true};
   }
-  if (input !== null) act(room, me, input);
-  room.updated = Date.now();
-  return view(room, me);
+  if (input !== null) act(room, me, input, now);
+  room.updated = now;
+  return view(room, me, now);
 }
