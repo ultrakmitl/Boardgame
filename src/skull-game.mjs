@@ -7,22 +7,22 @@ const live = room => room.players.filter(player => player.hand.length + player.p
 const top = player => player.pile.findLast(disc => !disc.revealed);
 const total = room => room.players.reduce((sum, player) => sum + player.pile.length, 0);
 
-export function maintainSkullRooms(now = Date.now()) {
-  for (const [code, room] of rooms) {
-    if (now - room.updated > 3600000) rooms.delete(code);
+export function maintainSkullRooms(now = Date.now(), roomStore = rooms) {
+  for (const [code, room] of roomStore) {
+    if (now - room.updated > 3600000) roomStore.delete(code);
   }
 }
 
-export function skullEnter(input) {
+export function skullEnter(input, roomStore = rooms, createCode = null) {
   const name = typeof input.name === 'string' ? input.name.trim() : '';
   if (!name || name.length > 24) throw Error('กรอกชื่อเล่น 1–24 ตัวอักษร');
-  let room = rooms.get(String(input.code ?? '').trim().toUpperCase());
+  let room = roomStore.get(String(input.code ?? '').trim().toUpperCase());
   if (input.create === true) {
-    if (rooms.size >= 500) throw Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
+    if (roomStore.size >= 500) throw Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
     let code;
-    do { code = randomBytes(4).toString('hex').toUpperCase(); } while (rooms.has(code));
+    do { code = createCode?.() ?? randomBytes(4).toString('hex').toUpperCase(); } while (roomStore.has(code));
     room = {code, phase:'lobby', players:[], revision:0, updated:Date.now()};
-    rooms.set(code, room);
+    roomStore.set(code, room);
   }
   if (!room) throw Error('ไม่พบห้องนี้');
   if (room.phase !== 'lobby' || room.players.length >= 6) throw Error('ห้องเต็มหรือเริ่มเกมแล้ว');
@@ -167,8 +167,8 @@ function apply(room, player, input) {
   room.revision++;
 }
 
-export function skullRoom(code, authorization, input) {
-  const room = rooms.get(code);
+export function skullRoom(code, authorization, input, roomStore = rooms) {
+  const room = roomStore.get(code);
   const player = room?.players.find(other => authorization === 'Bearer ' + other.token);
   if (!player) return null;
   room.updated = Date.now();

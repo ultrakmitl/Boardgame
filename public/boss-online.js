@@ -1,3 +1,4 @@
+import { startRoomPolling } from './room-polling.js';
 import {art,board,cardArt,cardName,colors,dealArt,track} from '/boss-rules.js';
 
 const get=id=>document.getElementById(id);
@@ -340,6 +341,11 @@ get('deal').addEventListener('input',event=>{
   }
 });
 document.addEventListener('click',async event=>{
+  const help=event.target.closest('button[data-help]');
+  if (help) {
+    get(help.dataset.help).showModal();
+    return;
+  }
   const control=event.target.closest('button[data-action]');
   if (!control || control.disabled || !state) return;
   const {action,target,position,card,offer}=control.dataset;
@@ -391,5 +397,5 @@ if (invite && sessionStorage.getItem('boss-room-'+invite)) {
   session={code:invite,token:sessionStorage.getItem('boss-room-'+invite)};
   void sync();
 }
-setInterval(()=>void sync(),800);
+startRoomPolling(sync, () => Boolean(session), () => state && state.phase !== 'lobby');
 setInterval(showTime,250);

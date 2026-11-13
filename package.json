@@ -1,1 +1,1 @@
-{"name":"andes-expedition","private":true,"type":"module","scripts":{"start":"node server.mjs","test":"node --test"},"engines":{"node":">=22"}}
+{"name":"andes-expedition","private":true,"type":"module","scripts":{"start":"node server.mjs","test":"node --test"},"engines":{"node":">=22"},"devDependencies":{"wrangler":"^4.161.0"}}

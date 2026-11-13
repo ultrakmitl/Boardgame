@@ -6,12 +6,14 @@
   <title>ใครไม่รู้ · I Know… You Don’t</title>
   <link rel="stylesheet" href="/know.css?v=13">
   <script type="module" src="/know.js?v=15"></script>
+<link rel="stylesheet" href="/game-shell.css">
 </head>
-<body>
-  <header><a href="/">← โต๊ะเกม</a><button id="help" type="button">วิธีเล่น</button></header>
-  <main>
+<body class="game-page game-know" style="--game-accent:#805017">
+<a class="skip-link" href="#game-main">ข้ามไปยังเกม</a>
+  <header><a href="/">‹ โต๊ะเกม</a><button id="help" type="button">วิธีเล่น</button></header>
+  <main id="game-main" tabindex="-1">
     <p id="connection" role="status" hidden></p>
-    <section id="lobby" class="lobby">
+    <section id="lobby" class="lobby game-entry">
       <div class="intro">
         <p class="english">I Know… You Don’t</p>
         <h1>ใครไม่รู้<span>?</span></h1>

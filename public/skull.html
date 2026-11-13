@@ -7,11 +7,13 @@
   <link rel="stylesheet" href="/skull.css">
   <link rel="stylesheet" href="/skull-online.css">
   <script type="module" src="/skull.js"></script>
+<link rel="stylesheet" href="/game-shell.css">
 </head>
-<body>
-  <main>
+<body class="game-page game-skull" style="--game-accent:#f2b1c9">
+<a class="skip-link" href="#game-main">ข้ามไปยังเกม</a>
+  <main id="game-main" tabindex="-1">
     <header>
-      <a class="back-link" href="/">← โต๊ะเกม</a>
+      <a class="back-link" href="/">‹ โต๊ะเกม</a>
       <div class="header-actions">
         <button id="show-rules" class="quiet" aria-haspopup="dialog">วิธีเล่น</button>
       </div>
@@ -21,7 +23,7 @@
       <p id="room-label">เล่นออนไลน์กับเพื่อน 3–6 คน</p>
     </section>
     <p id="notice" role="status"></p>
-    <section id="entry-view" class="entry-view" aria-labelledby="entry-title">
+    <section id="entry-view" class="entry-view game-entry" aria-labelledby="entry-title">
       <div class="entry-cover">
         <div class="cover-discs" aria-hidden="true"><span></span><span></span><span></span></div>
         <h1 id="entry-title">Skull</h1>

@@ -117,9 +117,10 @@ function resolveEffect(room, actor, input) {
       if (!Number.isInteger(input.guess) || input.guess < 0 || input.guess > 10 || input.guess === 1) {
         throw Error('เลือกเลข 0–10 ยกเว้น 1');
       }
-      log(room, actor.name + ' ทายไพ่ของ ' + target.name + ' เป็น ' + input.guess);
-      if (target.hand[0] === input.guess) eliminate(room, target);
-      else log(room, 'ทายผิด');
+      const correct = target.hand[0] === input.guess;
+      room.latestPlay.announcement = actor.name + ' ทายไพ่ของ ' + target.name + ' เป็นเลข ' +
+        input.guess + (correct ? ' · ทายถูก' : ' · ทายผิด');
+      if (correct) eliminate(room, target);
     }
     if (rank === 3) {
       const [own] = actor.hand;
@@ -128,10 +129,11 @@ function resolveEffect(room, actor, input) {
       actor.secretRank = other;
       target.secret = 'ดวลกับ ' + actor.name;
       target.secretRank = own;
+      room.latestPlay.announcement = actor.name + ' ดวลกับ ' + target.name + (own === other ? ' · เสมอ' : '');
       if (own !== other) eliminate(room, own < other ? actor : target);
-      else log(room, actor.name + ' ดวลกับ ' + target.name + ' แล้วเสมอ');
     }
     if (rank === 5) {
+      room.latestPlay.announcement = actor.name + ' บังคับให้ ' + target.name + ' ทิ้งไพ่';
       if (target.hand[0] === 10) eliminate(room, target);
       else {
         target.played.push(target.hand.pop());
@@ -144,22 +146,22 @@ function resolveEffect(room, actor, input) {
     }
     if (rank === 8) {
       [actor.hand, target.hand] = [target.hand, actor.hand];
-      log(room, actor.name + ' สลับไพ่กับ ' + target.name);
+      room.latestPlay.announcement = actor.name + ' สลับไพ่กับ ' + target.name;
     }
   }
   finishTurn(room);
 }
 
-export function petsEnter(input) {
+export function petsEnter(input, roomStore = rooms, createCode = null) {
   const name = typeof input.name === 'string' ? input.name.trim() : '';
   if (!name || name.length > 24) throw Error('กรอกชื่อเล่น 1–24 ตัวอักษร');
-  let room = rooms.get(input.code);
+  let room = roomStore.get(input.code);
   if (input.create === true) {
-    if (rooms.size >= 500) throw Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
+    if (roomStore.size >= 500) throw Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
     let code;
-    do { code = randomBytes(3).toString('hex').toUpperCase(); } while (rooms.has(code));
+    do { code = createCode?.() ?? randomBytes(3).toString('hex').toUpperCase(); } while (roomStore.has(code));
     room = {code, players:[], phase:'lobby', version:0, round:0};
-    rooms.set(code, room);
+    roomStore.set(code, room);
   }
   if (!room) throw Error('ไม่พบห้องนี้');
   if (room.phase !== 'lobby' || room.players.length >= 6) throw Error('ห้องเต็มหรือเริ่มเกมแล้ว');
@@ -171,8 +173,8 @@ export function petsEnter(input) {
   return {code:room.code, token};
 }
 
-export function petsRoom(code, authorization, input) {
-  const room = rooms.get(code);
+export function petsRoom(code, authorization, input, roomStore = rooms) {
+  const room = roomStore.get(code);
   let player = room?.players.find(p => 'Bearer ' + p.token === authorization);
   if (!player) return null;
   const self = room.players.indexOf(player);
@@ -213,6 +215,6 @@ export function petsRoom(code, authorization, input) {
   };
 }
 
-export function maintainPetsRooms(now) {
-  for (const [code, room] of rooms) if (now - room.updated > 3600000) rooms.delete(code);
+export function maintainPetsRooms(now, roomStore = rooms) {
+  for (const [code, room] of roomStore) if (now - room.updated > 3600000) roomStore.delete(code);
 }

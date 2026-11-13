@@ -1,3 +1,4 @@
+import { startRoomPolling } from './room-polling.js';
 import {cards} from './pets-cards.js';
 
 const byId = id => document.getElementById(id);
@@ -114,8 +115,10 @@ function render(s) {
     ${p.reveal !== undefined ? cardRow('ไพ่จบรอบ', [p.reveal]) : ''}
     ${p.played?.length ? cardRow('ไพ่ล่าสุด', p.played.slice(-1)) : ''}
   </li>`).join('');
+  const announcement = s.latestPlay?.announcement;
   byId('round-history').innerHTML = s.latestPlay
     ? cardRow(escape(s.latestPlay.name), [s.latestPlay.rank]) +
+      (announcement ? `<p>${escape(announcement)}</p>` : '') +
       (s.log.length ? `<ul>${[...s.log].reverse().map(line => `<li>${escape(line)}</li>`).join('')}</ul>` : '')
     : '<p>ยังไม่มีไพ่ที่ลงในรอบนี้</p>';
   table.innerHTML = `
@@ -128,6 +131,7 @@ function render(s) {
     <div class="felt">
       <p class="meta">${lobby ? s.players.length + '/6 คน' : 'รอบ ' + s.round + ' · กองจั่ว ' + s.pile + ' ใบ'}</p>
       <h1 aria-live="polite">${status}</h1>
+      ${announcement ? `<p class="table-announcement" role="status">${escape(announcement)}</p>` : ''}
     </div>
     <div class="table-layout">
       <section class="turn-panel" aria-label="ไพ่และการเล่นของคุณ">
@@ -229,4 +233,4 @@ async function refresh() {
 }
 
 refresh();
-setInterval(refresh, 1200);
+startRoomPolling(refresh, () => Boolean(session), () => state && state.phase !== 'lobby');

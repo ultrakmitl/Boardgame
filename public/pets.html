@@ -6,21 +6,23 @@
   <title>ศึกป่วนก๊วนต้าวเหมียว | Power Hungry Pets</title>
   <link rel="stylesheet" href="/pets.css">
   <script type="module" src="/pets.js"></script>
+<link rel="stylesheet" href="/game-shell.css">
 </head>
-<body>
+<body class="game-page game-pets" style="--game-accent:#70412d">
+<a class="skip-link" href="#game-main">ข้ามไปยังเกม</a>
   <header class="nav">
     <a href="/">‹ โต๊ะเกม</a>
     <div><button type="button" data-dialog="rules">วิธีเล่น</button> <button type="button" data-dialog="catalog">ดูการ์ด</button></div>
   </header>
-  <main>
-    <section id="welcome" class="welcome">
+  <main id="game-main" tabindex="-1">
+    <section id="welcome" class="welcome game-entry">
       <div class="intro">
         <p class="subtitle">Power Hungry Pets</p>
         <h1>ศึกป่วนก๊วน<br>ต้าวเหมียว</h1>
         <p>จั่วหนึ่ง ลงหนึ่ง แล้วเก็บไพ่ที่จะพาคุณชนะ</p>
         <form id="entry">
           <label>ชื่อเล่น<input name="name" required maxlength="24" autocomplete="nickname" placeholder="ชื่อที่เพื่อนจะเห็น"></label>
-          <label>รหัสห้อง<input name="code" maxlength="6" placeholder="กรอกเมื่อจะเข้าห้องเพื่อน" autocapitalize="characters"></label>
+          <label>รหัสห้อง<input name="code" maxlength="6" placeholder="กรอกเมื่อจะเข้าห้องเพื่อน" autocapitalize="characters" spellcheck="false"></label>
           <div class="buttons"><button name="create" class="primary">สร้างห้อง</button><button name="join">เข้าห้อง</button></div>
         </form>
         <p class="meta">2–6 คน · ประมาณ 15 นาที</p>

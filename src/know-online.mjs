@@ -13,23 +13,23 @@ function expireTurn(room, now) {
   room.revision++;
 }
 
-export function maintainKnowRooms(now) {
-  for (const [code, room] of rooms) {
-    if (now - room.updated > 3600000) rooms.delete(code);
+export function maintainKnowRooms(now, roomStore = rooms) {
+  for (const [code, room] of roomStore) {
+    if (now - room.updated > 3600000) roomStore.delete(code);
     else expireTurn(room, now);
   }
 }
 
-export function knowEnter(input) {
+export function knowEnter(input, roomStore = rooms, createCode = null) {
   const name = typeof input.name === 'string' ? input.name.trim() : '';
   if (!name || name.length > 24) throw Error('กรอกชื่อเล่น 1–24 ตัวอักษร');
-  let room = rooms.get(String(input.code ?? '').trim().toUpperCase());
+  let room = roomStore.get(String(input.code ?? '').trim().toUpperCase());
   if (input.create === true) {
-    if (rooms.size >= 500) throw Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
+    if (roomStore.size >= 500) throw Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
     let code;
-    do { code = randomBytes(4).toString('hex').toUpperCase(); } while (rooms.has(code));
+    do { code = createCode?.() ?? randomBytes(4).toString('hex').toUpperCase(); } while (roomStore.has(code));
     room = {code, seats: [], revision: 0, game: null, pending: null, notice: '', minutes: 5, deadline: null};
-    rooms.set(code, room);
+    roomStore.set(code, room);
   }
   if (!room) throw Error('ไม่พบห้องนี้');
   if (room.game || room.seats.length >= 7) throw Error('ห้องเต็มหรือเริ่มเกมแล้ว');
@@ -168,8 +168,8 @@ function view(room, me, now) {
   return state;
 }
 
-export function knowRoom(code, authorization, input = null) {
-  const room = rooms.get(code);
+export function knowRoom(code, authorization, input = null, roomStore = rooms) {
+  const room = roomStore.get(code);
   const me = room?.seats.findIndex(seat => 'Bearer ' + seat.token === authorization) ?? -1;
   if (me < 0) return null;
   const now = Date.now();
@@ -178,7 +178,7 @@ export function knowRoom(code, authorization, input = null) {
     if (room.game) reject();
     room.seats.splice(me, 1);
     room.revision++;
-    if (!room.seats.length) rooms.delete(code);
+    if (!room.seats.length) roomStore.delete(code);
     return {left: true};
   }
   if (input !== null) act(room, me, input, now);

@@ -81,6 +81,7 @@ input, select { width: 100%; min-width: 0; }
 }
 .felt h1 { margin: .15rem 0; font-size: clamp(1.4rem, 3vw, 2rem); overflow-wrap: anywhere; }
 .felt .meta { margin: 0; }
+.table-announcement { margin: .25rem 0 0; font-weight: 600; overflow-wrap: anywhere; }
 .table-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, .9fr);

@@ -1,0 +1,49 @@
+.game-page .skip-link {
+  position: fixed;
+  z-index: 100;
+  inset: 8px auto auto 8px;
+  background: #fffaf0;
+  color: #172d28;
+  padding: 10px 14px;
+  transform: translateY(-150%);
+}
+.game-page .skip-link:focus { transform: none; }
+.game-page :is(a,button,input,select,textarea,summary):focus-visible {
+  outline: 3px solid var(--game-accent);
+  outline-offset: 3px;
+}
+.game-page :is(button,a) { touch-action: manipulation; }
+.game-page header a { text-decoration: none; text-underline-offset: .3em; }
+.game-page header a:hover { text-decoration: underline; }
+.game-page .game-entry {
+  border: 1px solid color-mix(in srgb,var(--game-accent),transparent 45%);
+  border-radius: 18px;
+  overflow: clip;
+  box-shadow: 0 12px 28px #161b2424;
+}
+.game-page .game-entry h1 { text-wrap: balance; }
+.game-page .game-entry :is(input,button) { min-height: 44px; }
+.game-page .game-entry input { font-size: max(16px,1em); }
+.game-page .game-entry form { min-width: 0; }
+.game-page dialog { overscroll-behavior: contain; }
+.game-incan #home { min-height: min(560px,72vh); gap: clamp(14px,4vw,52px); }
+.game-incan #home > div { align-self: end; }
+.game-incan #entry { align-self: center; }
+.game-know #lobby { padding: clamp(20px,4vw,48px); gap: clamp(20px,4vw,52px); background: #f7edd7; }
+.game-know #lobby .poster { max-width: 410px; justify-self: center; box-shadow: none; }
+.game-pets #welcome { padding: clamp(20px,4vw,42px); background: #fff5e6; }
+.game-pets #welcome .poster { transform: none; }
+.game-wall #entry .intro h1 { line-height: .91; }
+.game-demo .demo-back { color: inherit; margin-right: 10px; }
+@media (max-width: 740px) {
+  .game-page .game-entry { border-radius: 12px; }
+  .game-incan #home { min-height: 0; }
+  .game-know #lobby .poster { max-width: 260px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-page *, .game-page *::before, .game-page *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

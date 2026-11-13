@@ -1,3 +1,4 @@
+import { startRoomPolling } from './room-polling.js';
 const $ = id => document.getElementById(id);
 const roomNode = $('room');
 const notice = $('notice');
@@ -199,6 +200,6 @@ roomNode.addEventListener('click',async event=>{
   finally {busy=false;}
 });
 document.querySelectorAll('[data-dialog]').forEach(button=>button.addEventListener('click',()=>$(button.dataset.dialog).showModal()));
-setInterval(poll,700);
+startRoomPolling(poll, () => Boolean(token), () => state && state.phase !== 'lobby');
 setInterval(tick,250);
 void poll();

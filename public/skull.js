@@ -1,3 +1,4 @@
+import { startRoomPolling } from './room-polling.js';
 const $ = id => document.getElementById(id);
 const entry = $('entry');
 const styles = ['กุหลาบป่า', 'ทิสเซิล', 'ลีลาวดี', 'กล้วยไม้', 'ดาวเรือง', 'บัวชมพู'];
@@ -255,4 +256,4 @@ function render() {
 }
 
 refresh();
-setInterval(refresh, 800);
+startRoomPolling(refresh, () => Boolean(token), () => state && state.phase !== 'lobby');

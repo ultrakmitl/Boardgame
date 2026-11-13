@@ -1,3 +1,4 @@
+import { startRoomPolling } from './room-polling.js';
 import {animals, colors, levels, rules} from './know-rules.js';
 
 const byId = id => document.getElementById(id);
@@ -485,5 +486,5 @@ if (saved?.code === inviteCode && saved.token) {
   attach(saved);
   sync();
 }
-setInterval(() => sync(), 900);
+startRoomPolling(sync, () => Boolean(session), () => Boolean(remote?.game));
 setInterval(updateClock, 250);

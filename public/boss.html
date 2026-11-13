@@ -98,16 +98,18 @@
   @media(max-width:760px){.game-grid{grid-template-columns:1fr}.seats{grid-template-columns:repeat(2,1fr)}.side ol{max-height:125px}}
   @media(max-width:460px){.bar,main{width:calc(100% - 22px)}.bar span{display:block;margin:0}.table{padding:14px}.cards{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:clamp(105px,32vw,136px);overflow-x:auto;scroll-snap-type:x proximity;padding:4px 4px 9px}.card{scroll-snap-align:start}.offer-row{grid-template-columns:1fr auto}.offer-row button{grid-column:1/-1;justify-self:start}}
 </style>
+<link rel="stylesheet" href="/game-shell.css">
 </head>
-<body>
-<header><div class="bar"><div><img class="cover" src="https://www.eagle-gryphon.com/cdn/shop/files/102418-4_700x700.png?v=1747772532" alt=""><b class="brand">I'm the Boss!</b><span>เดโมเล่นกับบอต</span></div><button data-action="reset">เริ่มใหม่</button></div></header>
-<main>
+<body class="game-page game-demo" style="--game-accent:#f4c976">
+<a class="skip-link" href="#game-main">ข้ามไปยังเกม</a>
+<header><div class="bar"><div><a class="demo-back" href="/">‹ โต๊ะเกม</a><img class="cover" src="/assets/boss/cards/boardroom.png" alt=""><b class="brand">I'm the Boss!</b><span>เดโมเล่นกับบอต</span></div><button data-action="reset">เริ่มใหม่</button></div></header>
+<main id="game-main" tabindex="-1">
   <section class="seats" id="seats" aria-label="ผู้เล่น"></section>
   <div class="game-grid">
   <section class="board" aria-label="กระดานดีล 16 ช่อง">
     <div id="spaces"></div>
     <div class="center">
-      <img class="board-cover" src="https://www.eagle-gryphon.com/cdn/shop/files/102418-4_700x700.png?v=1747772532" alt="">
+      <img class="board-cover" src="/assets/boss/cards/boardroom.png" alt="">
       <div class="center-ui">
         <div class="board-tools">
           <div class="deal-placard" id="dividend" aria-live="polite"><img id="deal-art" alt=""><span id="deal-number"></span><strong id="share-value"></strong></div>

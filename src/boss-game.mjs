@@ -266,17 +266,17 @@ function view(room,seat) {
       passes:room.window.passes,actor:room.window.actor,target:room.window.target,choices:room.window.choices}
   };
 }
-export function bossEnter(input) {
+export function bossEnter(input, roomStore = rooms, createCode = null) {
   if (!input || typeof input!=='object') bad('คำขอไม่ถูกต้อง');
   const name=typeof input.name==='string' ? input.name.trim() : '';
   if (!name || name.length>24) bad('กรอกชื่อเล่น 1–24 ตัวอักษร');
-  let room=rooms.get(input.code);
+  let room=roomStore.get(input.code);
   if (input.create===true) {
-    if (rooms.size>=500) bad('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
+    if (roomStore.size>=500) bad('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
     let code;
-    do { code=randomBytes(4).toString('hex').toUpperCase(); } while (rooms.has(code));
+    do { code = createCode?.() ?? randomBytes(4).toString('hex').toUpperCase(); } while (roomStore.has(code));
     room={code,players:[],host:0,turn:0,version:0,sequence:0,phase:'lobby',updated:Date.now(),log:[]};
-    rooms.set(code,room);
+    roomStore.set(code,room);
   }
   if (!room) bad('ไม่พบห้องนี้');
   if (room.phase!=='lobby' || room.players.length>=6) bad('ห้องเต็มหรือเริ่มเกมแล้ว');
@@ -287,8 +287,8 @@ export function bossEnter(input) {
   tick(room);
   return {code:room.code,token:session};
 }
-export function bossRoom(code,authorization,input=null) {
-  const room=rooms.get(code);
+export function bossRoom(code,authorization,input=null, roomStore = rooms) {
+  const room=roomStore.get(code);
   const seat=room?.players.findIndex(player=>'Bearer '+player.session===authorization);
   if (seat===undefined || seat<0) return null;
   room.players[seat].seen=room.updated=Date.now();
@@ -299,9 +299,9 @@ export function bossRoom(code,authorization,input=null) {
   }
   return view(room,seat);
 }
-export function maintainBossRooms(now) {
-  for (const [code,room] of rooms) {
-    if (now-room.updated>3600000) { rooms.delete(code); continue; }
+export function maintainBossRooms(now, roomStore = rooms) {
+  for (const [code,room] of roomStore) {
+    if (now-room.updated>3600000) { roomStore.delete(code); continue; }
     expireWindow(room);
     if (now-room.players[room.host].seen>45000) {
       const replacement=room.players.findIndex(player=>now-player.seen<12000);

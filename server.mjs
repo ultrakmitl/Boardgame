@@ -1,20 +1,26 @@
 import {createServer} from 'node:http';
-import {randomBytes} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {start,nextRound,resolve,view} from './src/game.mjs';
+import {incanEnter,incanRoom,maintainIncanRooms} from './src/incan-online.mjs';
 import {bossEnter,bossRoom,maintainBossRooms} from './src/boss-game.mjs';
 import {skullEnter,skullRoom,maintainSkullRooms} from './src/skull-game.mjs';
 import {petsEnter,petsRoom,maintainPetsRooms} from './src/pets-game.mjs';
+
 import {knowEnter,knowRoom,maintainKnowRooms} from './src/know-online.mjs';
 import {forSaleEnter,forSaleRoom,maintainForSaleRooms} from './src/for-sale-online.mjs';
+import {wallEnter,wallRoom,maintainWallRooms} from './src/wall-street.mjs';
 
-const rooms = new Map();
-const token = () => randomBytes(24).toString('base64url');
 const assets = new Map(Object.entries({
   '/games/power-hungry-pets':'pets.html','/pets.js':'pets.js','/pets.css':'pets.css',
   '/pets-cards.js':'pets-cards.js','/assets/pets/characters.png':'assets/pets/characters.png',
   '/assets/pets/cover.png':'assets/pets/cover.png',
+  '/hub.css':'hub.css','/hub.js':'hub.js','/room-polling.js':'room-polling.js','/game-shell.css':'game-shell.css',
   '/':'hub.html','/games/incan-gold':'index.html','/app.js':'app.js','/style.css':'style.css',
+  '/games/panic-on-wall-street':'wall-street.html','/wall-street.js':'wall-street.js','/wall-street.css':'wall-street.css',
+  '/assets/wall-street/cover.webp':'assets/wall-street/cover.webp',
+  '/assets/wall-street/company-blue.webp':'assets/wall-street/company-blue.webp',
+  '/assets/wall-street/company-green.webp':'assets/wall-street/company-green.webp',
+  '/assets/wall-street/company-yellow.webp':'assets/wall-street/company-yellow.webp',
+  '/assets/wall-street/company-red.webp':'assets/wall-street/company-red.webp',
   '/games/for-sale':'for-sale.html','/for-sale.js':'for-sale.js','/for-sale.css':'for-sale.css',
   '/assets/for-sale/cover.webp':'assets/for-sale/cover.webp',
   '/assets/for-sale/vehicles.webp':'assets/for-sale/vehicles.webp',
@@ -44,26 +50,6 @@ async function body(req) {
   }
   return JSON.parse(data);
 }
-function enter(input) {
-  const name = typeof input.name==='string' ? input.name.trim() : '';
-  if (!name || name.length>24) throw Error('กรอกชื่อเล่น 1–24 ตัวอักษร');
-  let room = rooms.get(input.code);
-  if (input.create===true) {
-    if (rooms.size>=500) throw Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
-    let code;
-    do { code=randomBytes(4).toString('hex').toUpperCase(); } while(rooms.has(code));
-    room = {code,players:[],phase:'lobby',turn:0,decisions:new Map(),updated:Date.now()};
-    rooms.set(code,room);
-  }
-  if (!room) throw Error('ไม่พบห้องนี้');
-  if (room.phase!=='lobby' || room.players.length>=8) throw Error('ห้องเต็มหรือเริ่มเกมแล้ว');
-  if (room.players.some(p=>p.name===name)) throw Error('ชื่อนี้มีคนใช้แล้ว');
-  const player = {id:token(),name,seen:Date.now()};
-  room.players.push(player);
-  room.host ??= player.id;
-  room.updated = Date.now();
-  return {code:room.code,token:player.id};
-}
 export const server = createServer(async (req,res)=>{
   const url = new URL(req.url,'http://localhost');
   if (req.method==='GET' && url.pathname==='/games/im-the-boss/') {
@@ -81,11 +67,27 @@ export const server = createServer(async (req,res)=>{
   if (file && req.method==='GET') {
     try {
       const bytes = await readFile(new URL('./public/'+file,import.meta.url));
-      res.writeHead(200,{'Content-Type':types[file.split('.').pop()],'X-Content-Type-Options':'nosniff'});
+      const headers = {'Content-Type':types[file.split('.').pop()],'X-Content-Type-Options':'nosniff'};
+      if (['wall-street.html','wall-street.js','wall-street.css'].includes(file)) {
+        headers['Cache-Control'] = 'no-store';
+      }
+      res.writeHead(200,headers);
       return res.end(bytes);
     } catch { return send(res,404,{error:'ไม่พบไฟล์'}); }
   }
   try {
+    if (url.pathname==='/api/wall-street/enter' && req.method==='POST') return send(res,200,wallEnter(await body(req)));
+    if (url.pathname==='/api/wall-street/room' && ['GET','POST'].includes(req.method)) {
+      const input = req.method==='POST' ? await body(req) : undefined;
+      const state = wallRoom(url.searchParams.get('code'),req.headers.authorization,input);
+      return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
+    }
+    if (url.pathname==='/api/for-sale/enter' && req.method==='POST') return send(res,200,forSaleEnter(await body(req)));
+    if (url.pathname==='/api/for-sale/room' && ['GET','POST'].includes(req.method)) {
+      const input = req.method==='POST' ? await body(req) : undefined;
+      const state = forSaleRoom(url.searchParams.get('code'),req.headers.authorization,input);
+      return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
+    }
     if (url.pathname==='/api/know/enter' && req.method==='POST') return send(res,200,knowEnter(await body(req)));
     if (url.pathname==='/api/know/room' && ['GET','POST'].includes(req.method)) {
       const input = req.method==='POST' ? await body(req) : null;
@@ -96,12 +98,6 @@ export const server = createServer(async (req,res)=>{
     if (url.pathname==='/api/pets/room' && ['GET','POST'].includes(req.method)) {
       const input=req.method==='POST' ? await body(req) : null;
       const state=petsRoom(url.searchParams.get('code'),req.headers.authorization,input);
-      return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
-    }
-    if (url.pathname==='/api/for-sale/enter' && req.method==='POST') return send(res,200,forSaleEnter(await body(req)));
-    if (url.pathname==='/api/for-sale/room' && ['GET','POST'].includes(req.method)) {
-      const input = req.method==='POST' ? await body(req) : undefined;
-      const state = forSaleRoom(url.searchParams.get('code'),req.headers.authorization,input);
       return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
     }
     if (url.pathname==='/api/skull/enter' && req.method==='POST') return send(res,200,skullEnter(await body(req)));
@@ -116,46 +112,22 @@ export const server = createServer(async (req,res)=>{
       const state=bossRoom(url.searchParams.get('code'),req.headers.authorization,input);
       return state ? send(res,200,state) : send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
     }
-    if (url.pathname==='/api/enter' && req.method==='POST') return send(res,200,enter(await body(req)));
+    if (url.pathname==='/api/enter' && req.method==='POST') return send(res,200,incanEnter(await body(req)));
     if (url.pathname!=='/api/room' || !['GET','POST'].includes(req.method)) return send(res,404,{error:'ไม่พบหน้า'});
-    const input = req.method==='POST' ? await body(req) : {};
-    const room = rooms.get(url.searchParams.get('code'));
-    const player = room?.players.find(p=>'Bearer '+p.id===req.headers.authorization);
-    if (!player) return send(res,401,{error:'เซสชันหมดอายุ กรุณาเข้าห้องใหม่'});
-    room.updated = player.seen = Date.now();
-    if (req.method==='POST') {
-      if (room.phase==='playing' && Date.now()>=room.deadline) resolve(room);
-      if (input.turn!==room.turn) return send(res,409,{error:'ตานี้จบแล้ว'});
-      if (input.action==='choose' && room.phase==='playing' && player.active &&
-          !room.decisions.has(player.id) && ['exit','explore'].includes(input.choice)) {
-        room.decisions.set(player.id,input.choice);
-        if (room.players.every(p=>!p.active || room.decisions.has(p.id))) resolve(room);
-      } else if (room.host===player.id && input.action==='start' &&
-          ['lobby','finished'].includes(room.phase) && room.players.length>=3) {
-        start(room);
-      } else if (room.host===player.id && input.action==='next' && room.phase==='intermission') {
-        nextRound(room);
-      } else return send(res,409,{error:'คำสั่งนี้ใช้ไม่ได้ในตอนนี้'});
-    }
-    send(res,200,view(room,player));
+    const input = req.method==='POST' ? await body(req) : undefined;
+    const {status,data} = incanRoom(url.searchParams.get('code'),req.headers.authorization,input);
+    return send(res,status,data);
   } catch (error) { send(res,400,{error:error instanceof SyntaxError ? 'คำขอไม่ถูกต้อง' : error.message}); }
 });
 setInterval(()=>{
   const now = Date.now();
   maintainBossRooms(now);
   maintainSkullRooms(now);
-  maintainForSaleRooms(now);
   maintainPetsRooms(now);
   maintainKnowRooms(now);
-  for (const [code,room] of rooms) {
-    if (now-room.updated>3600000) { rooms.delete(code); continue; }
-    const host = room.players.find(p=>p.id===room.host);
-    if (now-host.seen>45000) {
-      const replacement = room.players.find(p=>now-p.seen<12000);
-      if (replacement) room.host = replacement.id;
-    }
-    if (room.phase==='playing' && now>=room.deadline) resolve(room);
-  }
+  maintainForSaleRooms(now);
+  maintainWallRooms(now);
+  maintainIncanRooms(now);
 },1000).unref();
 
 server.listen(Number(process.env.PORT || 3000),'0.0.0.0',()=>{

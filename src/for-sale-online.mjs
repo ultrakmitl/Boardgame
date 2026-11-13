@@ -3,16 +3,16 @@ import {createGame, auction, sell, advance, ranking} from '../public/for-sale-ga
 
 const rooms = new Map();
 
-export function forSaleEnter(input) {
+export function forSaleEnter(input, roomStore = rooms, createCode = null) {
   const name = typeof input?.name === 'string' ? input.name.trim() : '';
   if (!name || name.length > 24) throw new Error('กรอกชื่อเล่น 1–24 ตัวอักษร');
-  let room = rooms.get(input.code);
+  let room = roomStore.get(input.code);
   if (input.create === true) {
-    if (rooms.size >= 500) throw new Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
+    if (roomStore.size >= 500) throw new Error('เซิร์ฟเวอร์มีห้องเต็มแล้ว');
     let code;
-    do { code = randomBytes(4).toString('hex').toUpperCase(); } while (rooms.has(code));
+    do { code = createCode?.() ?? randomBytes(4).toString('hex').toUpperCase(); } while (roomStore.has(code));
     room = {code, seats: [], game: null, version: 0};
-    rooms.set(code, room);
+    roomStore.set(code, room);
   }
   if (!room) throw new Error('ไม่พบห้องนี้');
   if (room.game || room.seats.length >= 6) throw new Error('ห้องเต็มหรือเริ่มเกมแล้ว');
@@ -43,8 +43,8 @@ function view(room, you) {
   };
 }
 
-export function forSaleRoom(code, authorization, input) {
-  const room = rooms.get(code);
+export function forSaleRoom(code, authorization, input, roomStore = rooms) {
+  const room = roomStore.get(code);
   const you = room?.seats.findIndex(seat => 'Bearer ' + seat.token === authorization);
   if (you == null || you < 0) return null;
   room.updated = Date.now();
@@ -75,7 +75,7 @@ export function forSaleRoom(code, authorization, input) {
         if (game) throw new Error('กลับเข้าห้องจากแท็บเดิมได้');
         room.seats.splice(you, 1);
         room.version++;
-        if (!room.seats.length) rooms.delete(code);
+        if (!room.seats.length) roomStore.delete(code);
         return {left: true};
       default:
         throw new Error('คำสั่งไม่ถูกต้อง');
@@ -85,8 +85,8 @@ export function forSaleRoom(code, authorization, input) {
   return view(room, you);
 }
 
-export function maintainForSaleRooms(now) {
-  for (const [code, room] of rooms) {
-    if (now - room.updated > 2 * 60 * 60 * 1000) rooms.delete(code);
+export function maintainForSaleRooms(now, roomStore = rooms) {
+  for (const [code, room] of roomStore) {
+    if (now - room.updated > 2 * 60 * 60 * 1000) roomStore.delete(code);
   }
 }

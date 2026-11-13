@@ -4,102 +4,116 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>โต๊ะเกม | เลือกเกมออนไลน์</title>
-  <link rel="stylesheet" href="/style.css">
-  <style>
-    .hub { padding-block:clamp(28px,6vw,72px); }
-    .hub-intro { border-bottom:1px solid var(--line); padding-bottom:20px; margin-bottom:24px; }
-    .hub h1 { margin:0; }
-    .hub-intro p { color:var(--muted); margin:.5rem 0 0; }
-    .game-library {
-      list-style:none; padding:0; margin:0; display:grid; gap:20px;
-      grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));
-    }
-    .game-tile {
-      height:100%; overflow:hidden; display:flex; flex-direction:column;
-      border:1px solid var(--line); border-radius:14px; background:var(--panel);
-    }
-    .game-tile img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; background:#293b30; }
-    .game-tile-body { flex:1; display:flex; flex-direction:column; align-items:flex-start; padding:18px; }
-    .game-tile h2 { font-size:1.65rem; margin:0; line-height:1.25; overflow-wrap:anywhere; }
-    .game-tile small { color:var(--gold); margin-top:.35rem; }
-    .game-tile p { color:var(--muted); margin:.8rem 0 1.2rem; }
-    .game-tile a { margin-top:auto; padding:9px 15px; border-radius:7px; text-decoration:none; }
-  </style>
+  <meta name="theme-color" content="#102925">
+  <link rel="stylesheet" href="/hub.css">
+  <script type="module" src="/hub.js"></script>
 </head>
 <body>
-  <main class="hub">
+  <a class="skip-link" href="#catalog">ข้ามไปยังรายการเกม</a>
+  <header class="hub-header"><div class="hub-width"><a href="/">โต๊ะเกม <span lang="en">Boardgame Hub</span></a></div></header>
+  <main class="hub hub-width">
     <div class="hub-intro">
-      <h1>โต๊ะเกม</h1>
-      <p>เลือกเกม แล้วชวนเพื่อนเข้าห้อง</p>
+      <h1>คืนนี้เล่นอะไรดี?</h1>
+      <p>เลือกเกม แล้วชวนเพื่อนมาเล่น</p>
     </div>
+    <section class="catalog" id="catalog" tabindex="-1" aria-labelledby="catalog-title">
+      <h2 id="catalog-title">เลือกบอร์ดเกม</h2>
+      <form id="game-filters" role="search" aria-label="ค้นหาและกรองบอร์ดเกม" hidden>
+        <label>ค้นหาเกม<input type="search" name="q" placeholder="เช่น Skull หรือ ประมูล…" autocomplete="off"></label>
+        <label>จำนวนผู้เล่น<select name="players">
+          <option value="">ทุกจำนวน</option>
+          <option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+          <option>7</option><option>8</option><option>9</option><option>10</option><option>11</option>
+        </select></label>
+        <label>แนวเกม<select name="genre">
+          <option value="">ทุกแนว</option><option value="risk">เสี่ยงโชค</option><option value="negotiation">เจรจา</option>
+          <option value="bluff">บลัฟ</option><option value="deduction">ไขปริศนา</option>
+          <option value="cards">วางแผนไพ่</option><option value="auction">ประมูล</option>
+        </select></label>
+        <button type="reset">ล้างตัวกรอง</button>
+      </form>
+      <p class="result-count" id="game-count" role="status"></p>
+      <p class="empty" id="game-empty" hidden>ไม่พบเกม ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง</p>
     <ul class="game-library" aria-label="เกมที่เปิดให้เล่น">
-      <li>
+      <li data-min="3" data-max="8" data-genre="risk" data-alias="ขุมทรัพย์แห่งแอนดีส">
         <article class="game-tile">
-          <img src="/assets/incan/cover.webp" alt="นักสำรวจหนีงูยักษ์ออกจากวิหารอินคา">
+          <img width="640" height="360" decoding="async" src="/assets/incan/cover.webp" alt="นักสำรวจหนีงูยักษ์ออกจากวิหารอินคา">
           <div class="game-tile-body">
-            <h2>Incan Gold</h2>
-            <small>3–8 คน · เล่นออนไลน์</small>
+            <h3>Incan Gold</h3>
+            <small>3–8 คน · เสี่ยงโชค</small>
             <p>สำรวจวิหาร เก็บสมบัติ แล้วตัดสินใจว่าจะกลับแคมป์หรือเสี่ยงไปต่อ</p>
-            <a class="primary" href="/games/incan-gold">เข้าเล่น Incan Gold</a>
+            <a class="play-link" href="/games/incan-gold">เข้าเล่น Incan Gold</a>
           </div>
         </article>
       </li>
-      <li>
+      <li data-min="3" data-max="6" data-genre="negotiation" data-alias="">
         <article class="game-tile">
-          <img src="/assets/boss/cards/boardroom.png" alt="">
+          <img width="640" height="360" decoding="async" src="/assets/boss/cards/boardroom.png" alt="">
           <div class="game-tile-body">
-            <h2>I'm the Boss!</h2>
-            <small>3–6 คน · เล่นออนไลน์</small>
+            <h3>I'm the Boss!</h3>
+            <small>3–6 คน · เจรจา</small>
             <p>รวมทีมนักลงทุน ต่อรองส่วนแบ่ง และแย่งสิทธิ์ปิดดีลกับเพื่อน</p>
-            <a class="primary" href="/games/im-the-boss">เข้าเล่น I’m the Boss!</a>
+            <a class="play-link" href="/games/im-the-boss">เข้าเล่น I’m the Boss!</a>
           </div>
         </article>
       </li>
-      <li>
+      <li data-min="3" data-max="6" data-genre="bluff" data-alias="">
         <article class="game-tile">
-          <img src="/assets/skull/cover.png" alt="ปก Skull สีชมพู ลายหัวกะโหลกและดอกไม้">
+          <img width="640" height="360" decoding="async" src="/assets/skull/cover.png" alt="ปก Skull สีชมพู ลายหัวกะโหลกและดอกไม้">
           <div class="game-tile-body">
-            <h2>Skull</h2>
-            <small>3–6 คน · เล่นออนไลน์</small>
+            <h3>Skull</h3>
+            <small>3–6 คน · บลัฟ</small>
             <p>วางดอกไม้หรือหัวกะโหลก แล้วประมูลว่าคุณจะเปิดดอกไม้ได้กี่แผ่น</p>
-            <a class="primary" href="/games/skull">เข้าเล่น Skull</a>
+            <a class="play-link" href="/games/skull">เข้าเล่น Skull</a>
           </div>
         </article>
       </li>
-      <li>
+      <li data-min="3" data-max="7" data-genre="deduction" data-alias="I Know You Don’t">
         <article class="game-tile">
-          <img src="/assets/know/cover.png" alt="นักสืบในเงามืดกับการ์ดหมู หมา กา และไก่">
+          <img width="640" height="360" decoding="async" loading="lazy" src="/assets/know/cover.png" alt="นักสืบในเงามืดกับการ์ดหมู หมา กา และไก่">
           <div class="game-tile-body">
-            <h2>ใครไม่รู้</h2>
-            <small>3–7 คน · เล่นออนไลน์</small>
+            <h3>ใครไม่รู้</h3>
+            <small>3–7 คน · ไขปริศนา</small>
             <p>ลองลงไพ่หมู หมา กา ไก่ แล้วหาให้เจอว่าไพ่แบบไหนผ่านกฎลับ</p>
-            <a class="primary" href="/games/i-know-you-dont">เข้าเล่น ใครไม่รู้</a>
+            <a class="play-link" href="/games/i-know-you-dont">เข้าเล่น ใครไม่รู้</a>
           </div>
         </article>
       </li>
-      <li>
+      <li data-min="2" data-max="6" data-genre="cards" data-alias="Power Hungry Pets">
         <article class="game-tile">
-          <img src="/assets/pets/cover.png" alt="แก๊งแมวกำลังล้อมวงเล่นไพ่">
+          <img width="640" height="360" decoding="async" loading="lazy" src="/assets/pets/cover.png" alt="แก๊งแมวกำลังล้อมวงเล่นไพ่">
           <div class="game-tile-body">
-            <h2>ศึกป่วนก๊วนต้าวเหมียว</h2>
-            <small>2–6 คน · เล่นออนไลน์</small>
+            <h3>ศึกป่วนก๊วนต้าวเหมียว</h3>
+            <small>2–6 คน · วางแผนไพ่</small>
             <p>จั่วหนึ่งใบ ลงหนึ่งใบ ใช้พลังป่วนเพื่อน แล้วเก็บไพ่ที่พาคุณชนะรอบ</p>
-            <a class="primary" href="/games/power-hungry-pets">เข้าเล่น Power Hungry Pets</a>
+            <a class="play-link" href="/games/power-hungry-pets">เข้าเล่น Power Hungry Pets</a>
           </div>
         </article>
       </li>
-      <li>
+      <li data-min="3" data-max="6" data-genre="auction" data-alias="For Sale">
         <article class="game-tile">
-          <img src="/assets/for-sale/cover.webp" alt="รถสปอร์ตและรถตุ๊กตุ๊กกำลังซิ่งออกจากโรงประมูล">
+          <img width="640" height="360" decoding="async" loading="lazy" src="/assets/for-sale/cover.webp" alt="รถสปอร์ตและรถตุ๊กตุ๊กกำลังซิ่งออกจากโรงประมูล">
           <div class="game-tile-body">
-            <h2>บิดแล้วรวย</h2>
-            <small>3–6 คน · เล่นออนไลน์</small>
+            <h3>บิดแล้วรวย</h3>
+            <small>3–6 คน · ประมูล</small>
             <p>ประมูลยานพาหนะตั้งแต่สกูตเตอร์ถึงจรวด แล้วขายให้ได้เช็คใบใหญ่</p>
-            <a class="primary" href="/games/for-sale">เข้าเล่น For Sale</a>
+            <a class="play-link" href="/games/for-sale">เข้าเล่น For Sale</a>
+          </div>
+        </article>
+      </li>
+      <li data-min="3" data-max="11" data-genre="negotiation" data-alias="Wall Street">
+        <article class="game-tile">
+          <img width="640" height="360" decoding="async" loading="lazy" src="/assets/wall-street/cover.webp" alt="ห้องซื้อขายหุ้นนิวยอร์กในปี 1929">
+          <div class="game-tile-body">
+            <h3>Panic on Wall Street!</h3>
+            <small>3–11 คน · เจรจา</small>
+            <p>เจรจาราคาหุ้น ลุ้นผลตลาด แล้วประมูลบริษัทก่อนเปิดตลาดเดือนถัดไป</p>
+            <a class="play-link" href="/games/panic-on-wall-street">เข้าเล่น Panic on Wall Street!</a>
           </div>
         </article>
       </li>
     </ul>
+    </section>
   </main>
 </body>
 </html>

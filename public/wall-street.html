@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panic on Wall Street! · ห้องค้าหุ้น</title>
+<link rel="stylesheet" href="/wall-street.css?v=market-dice">
+<script type="module" src="/wall-street.js?v=auction-leader"></script>
+<link rel="stylesheet" href="/game-shell.css">
+</head>
+<body class="game-page game-wall" style="--game-accent:#82531f">
+<a class="skip-link" href="#game-main">ข้ามไปยังเกม</a>
+<header class="mast"><a href="/">‹ โต๊ะเกม</a><strong>Wall Street <span>1929</span></strong><button id="rules-open" class="quiet">วิธีเล่น</button></header>
+<main id="game-main" tabindex="-1">
+  <section id="entry" class="entry game-entry">
+    <div class="cover" role="img" aria-label="ห้องซื้อขายหุ้นนิวยอร์กในปี 1929"></div>
+    <div class="intro">
+      <p class="edition">เกมเจรจาหุ้นออนไลน์ · 3–11 คน</p>
+      <h1>Panic on<br>Wall Street!</h1>
+      <p>เจรจาราคาหุ้นก่อนระฆังดัง แล้วลุ้นว่าตลาดจะจ่ายกำไรหรือขาดทุน</p>
+      <form id="entry-form">
+        <label>ชื่อเล่น<input name="name" maxlength="24" required autocomplete="nickname" placeholder="ชื่อที่เพื่อนจะเห็น"></label>
+        <label>รหัสห้อง<input name="code" maxlength="8" autocomplete="off" placeholder="รหัส 8 ตัวอักษร" spellcheck="false"></label>
+        <div class="actions"><button type="submit" value="join">เข้าห้อง</button><button type="submit" value="create" class="quiet">สร้างห้องใหม่</button></div>
+      </form>
+    </div>
+  </section>
+  <p id="status" class="status" role="status"></p>
+  <section id="table" hidden>
+    <div class="room-bar"><div>ห้อง <strong id="room-code"></strong></div><button id="invite" class="quiet">คัดลอกลิงก์</button><button id="exit" class="quiet">กลับหน้าเข้าห้อง</button></div>
+    <section class="table-head"><div class="phase-line"><span id="rounds" class="rounds"></span><h1 id="phase"></h1></div><p id="wallet" class="wallet" hidden></p><div id="clock" class="clock" hidden></div><p id="instruction"></p></section>
+    <nav class="mobile-nav" aria-label="พื้นที่โต๊ะเกม">
+      <button id="show-board" type="button" aria-controls="board" aria-pressed="true">โต๊ะเกม</button>
+      <button id="show-sidebar" type="button" aria-controls="sidebar" aria-pressed="false">ผู้เล่นและแชต</button>
+    </nav>
+    <div class="layout">
+      <div id="board">
+        <section id="market-panel" hidden aria-label="ตลาดหุ้น">
+          <div id="ticker" class="ticker"></div>
+          <details class="market-detail"><summary>ดูช่องตลาดทั้งหมด</summary><div id="market" class="market" aria-label="กระดานตลาดหุ้น"></div></details>
+        </section>
+        <div id="board-scroll">
+          <section id="activity" class="activity"></section>
+          <section id="portfolio" hidden>
+          <div class="portfolio-head">
+            <h2>บริษัทในตลาด</h2>
+            <div class="actions">
+              <button id="incoming-offers" type="button" hidden>ดูข้อเสนอรอรับ</button>
+              <label>แสดง <select id="tile-filter"><option value="all">ทุกบริษัท</option><option value="buy">บริษัทที่เสนอราคาได้</option><option value="owned">บริษัทของฉัน</option><option value="invest">ดีลของฉัน</option><option value="offers">ข้อเสนอรอรับ</option></select></label>
+            </div>
+          </div>
+          <p id="no-tiles" hidden>ไม่มีบริษัทในมุมมองนี้</p>
+          <div id="tiles" class="tiles"></div>
+          </section>
+        </div>
+      </div>
+      <aside id="sidebar">
+        <section class="panel"><h2>ผู้เล่น</h2><div id="players"></div></section>
+        <section class="panel chat"><h2>แชตเจรจา</h2><div id="messages" role="log" aria-label="แชตเจรจา"></div>
+          <form id="chat-form"><input aria-label="ข้อความ" name="message" maxlength="240" required placeholder="พิมพ์ข้อความ"><button>ส่ง</button></form>
+        </section>
+      </aside>
+    </div>
+  </section>
+</main>
+<dialog id="rules">
+  <form method="dialog" class="dialog-head"><h2>วิธีเล่น Panic on Wall Street!</h2><button class="quiet" aria-label="ปิดคู่มือ">ปิด</button></form>
+  <p>เริ่มด้วยคนละ $120,000 ผู้จัดการได้บริษัทปกติ 3 ใบต่อคน เมื่อเล่น 3–4 คน ทุกคนรับทั้งสองบทบาทและซื้อหุ้นบริษัทตัวเองไม่ได้ ตั้งแต่ 5 คนขึ้นไป ระบบทอยลูกเต๋าแดงเพื่อแบ่งบทบาท</p>
+  <ol>
+    <li><strong>ตั้งราคาเปิด 1 นาที</strong> ผู้จัดการตั้งราคาบนการ์ดของตัวเอง นักลงทุนเห็นราคาที่บันทึกทันทีและใช้ประกอบการยื่นข้อเสนอ เมื่อผู้จัดการกดพร้อมครบหรือหมดเวลา เกมเริ่มเจรจา</li>
+    <li><strong>เจรจา 2 นาที</strong> นักลงทุนส่งราคา ผู้จัดการกดรับเพื่อให้ดีลมีผล เมื่อผู้ซื้อและผู้ขายกด «ปิดดีล» ครบทั้งคู่ เกมจะล็อกราคาและถอนดีลไม่ได้ในเดือนนั้น หากหมดเวลาก่อนกดครบ เกมใช้ราคาล่าสุดที่ผู้จัดการรับไว้ นักลงทุนถือได้สูงสุด 10 ดีลพร้อมกัน</li>
+    <li><strong>ทอยตลาด</strong> เจ้าห้องเลือกทอยทีละสี ลูกเต๋าแต่ละลูกเลื่อนตัวชี้ของสีนั้นจากตำแหน่งเดิม เมื่อทอยครบสี่สีจึงคิดผลตอบแทนหรือขาดทุนตามช่องตลาด บริษัท ×2 คูณเฉพาะผลตอบแทนหรือขาดทุน</li>
+    <li><strong>ชำระราคาหุ้น</strong> นักลงทุนจ่ายราคาที่ตกลงกับผู้จัดการ ถ้าเงินไม่พอ เจ้าหนี้เลือกข้ามการเก็บเงินครั้งนี้หรือให้ออกจากบทบาทนักลงทุน ดีลที่ยังอยู่จะยกไปเดือนหน้าและปลดล็อกให้เจรจาใหม่ได้</li>
+    <li><strong>จ่ายค่าบริหาร</strong> ผู้จัดการจ่าย $10,000 ต่อบริษัทที่ถืออยู่ต้นเดือน หากเงินไม่พอ เลือกขายบริษัทคืนธนาคารใบละ $5,000 จนจ่ายได้</li>
+    <li><strong>ประมูลบริษัทใหม่</strong> เปิดทีละใบ สูงสุดสองเท่าของจำนวนผู้จัดการลบหนึ่ง ผู้ชนะจ่ายธนาคารแล้วรับบริษัทไปใช้เดือนถัดไป ใบที่ไม่มีคนบิดถูกนำออก เดือนที่ 5 จบหลังค่าบริหาร</li>
+  </ol>
+  <p>หลัง 5 เดือน คนที่มีเงินสดมากที่สุดในแต่ละบทบาทชนะ เมื่อเล่น 3–4 คนจัดอันดับเงินสดรวมชุดเดียว</p>
+  <h3>แผ่นบริษัทและอุปกรณ์ต้นฉบับ</h3>
+  <table><thead><tr><th>สี</th><th>ปกติ</th><th>×2</th></tr></thead><tbody>
+  <tr><td>น้ำเงิน</td><td>11</td><td>2</td></tr><tr><td>เขียว</td><td>11</td><td>2</td></tr><tr><td>เหลือง</td><td>11</td><td>2</td></tr><tr><td>แดง</td><td>6</td><td>1</td></tr>
+  </tbody></table>
+  <p>นอกจากนี้มีกระดานตลาด 1 แผ่น ตัวชี้ 4 ชิ้น ลูกเต๋า 4 ลูก โทเคน 60 ชิ้น ธนบัตรประมาณ 200 ใบ ตัวจับเวลา 1 อัน ปากกาลบได้ 5 ด้าม และคู่มือ</p>
+  <p>ฉบับเว็บใช้ชื่อบริษัทสมมติ ประมูลด้วยเวลา 25 วินาทีต่อราคาใหม่ และให้เจ้าห้องเปิดประมูลหลังดูสรุปตลาด ผู้เล่นคุยเรื่องหนี้ค้างกันในแชต</p>
+  <p><a href="https://cs.uwaterloo.ca/~dtompkin/archive/dtlib/base/Panic%20on%20Wall%20Street%21.pdf" target="_blank" rel="noopener">คู่มือภาษาอังกฤษ</a> · <a href="https://www.aleakybos.ch/Wanted.htm" target="_blank" rel="noopener">หน้าลูกเต๋า</a></p>
+</dialog>
+</body>
+</html>

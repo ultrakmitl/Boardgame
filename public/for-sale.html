@@ -7,18 +7,20 @@
 <title>บิดแล้วรวย | For Sale</title>
 <link rel="stylesheet" href="/for-sale.css">
 <script type="module" src="/for-sale.js"></script>
+<link rel="stylesheet" href="/game-shell.css">
 </head>
-<body>
-<header><a href="/">← รวมบอร์ดเกม</a><button id="open-rules" class="outline">วิธีเล่นและการ์ด</button></header>
-<main>
-<section id="lobby">
+<body class="game-page game-sale" style="--game-accent:#503477">
+<a class="skip-link" href="#game-main">ข้ามไปยังเกม</a>
+<header><a href="/">‹ โต๊ะเกม</a><button id="open-rules" class="outline">วิธีเล่นและการ์ด</button></header>
+<main id="game-main" tabindex="-1">
+<section id="lobby" class="game-entry">
   <div class="intro">
     <p class="english">FOR SALE</p>
     <h1>บิดแล้วรวย</h1>
     <p>ประมูลยานพาหนะให้คุ้ม แล้วเลือกจังหวะขายให้ได้เงินมากที่สุด</p>
     <form id="online-setup">
       <label>ชื่อเล่น <input id="online-name" maxlength="24" autocomplete="nickname" required></label>
-      <label>รหัสห้อง <input id="online-code" maxlength="8" placeholder="กรอกเมื่อเข้าห้องเพื่อน" autocomplete="off" autocapitalize="characters"></label>
+      <label>รหัสห้อง <input id="online-code" maxlength="8" placeholder="กรอกเมื่อเข้าห้องเพื่อน" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
       <div class="online-buttons">
         <button class="primary" id="create-room">สร้างห้องออนไลน์</button>
         <button id="join-room">เข้าห้องเพื่อน</button>

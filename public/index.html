@@ -1,10 +1,12 @@
 <!doctype html>
-<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ขุมทรัพย์แห่งแอนดีส</title><link rel="stylesheet" href="/style.css"></head>
-<body>
-<header class="game-nav"><a class="hub-link" href="/">← กลับโต๊ะเกม</a><nav><button data-dialog="rules">วิธีเล่น</button></nav></header>
-<main>
-<section id="home" class="hero"><div><h1>ขุมทรัพย์<br>แห่งแอนดีส</h1><p>ยิ่งลึกยิ่งได้มาก แต่จะกลับทันไหม?</p><span class="tag">3–8 คน · 5 รอบ · เล่นพร้อมกัน</span></div>
-<form id="entry" class="panel"><h2>ตั้งคณะสำรวจ</h2><label>ชื่อเล่น<input id="name" required maxlength="24" placeholder="ชื่อที่เพื่อนจะเห็น"></label><label>รหัสห้อง<input id="code" maxlength="8" placeholder="กรอกรหัสเพื่อเข้าร่วม"></label><button class="primary" id="join" value="join">เข้าห้อง</button><button value="create">สร้างห้องใหม่</button></form></section>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ขุมทรัพย์แห่งแอนดีส</title><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/game-shell.css">
+</head>
+<body class="game-page game-incan" style="--game-accent:#e9bd72">
+<a class="skip-link" href="#game-main">ข้ามไปยังเกม</a>
+<header class="game-nav"><a class="hub-link" href="/">‹ โต๊ะเกม</a><nav><button data-dialog="rules">วิธีเล่น</button></nav></header>
+<main id="game-main" tabindex="-1">
+<section id="home" class="hero game-entry"><div><h1>ขุมทรัพย์<br>แห่งแอนดีส</h1><p>ยิ่งลึกยิ่งได้มาก แต่จะกลับทันไหม?</p><span class="tag">3–8 คน · 5 รอบ · เล่นพร้อมกัน</span></div>
+<form id="entry" class="panel"><h2>ตั้งคณะสำรวจ</h2><label>ชื่อเล่น<input id="name" required maxlength="24" placeholder="ชื่อที่เพื่อนจะเห็น"></label><label>รหัสห้อง<input id="code" maxlength="8" placeholder="กรอกรหัสเพื่อเข้าร่วม" spellcheck="false"></label><button class="primary" id="join" value="join">เข้าห้อง</button><button value="create">สร้างห้องใหม่</button></form></section>
 <p id="notice" role="status"></p><section id="room" hidden></section>
 </main>
 <dialog id="rules" aria-labelledby="rules-title">

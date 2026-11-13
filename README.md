@@ -73,3 +73,15 @@ node --test
 - `machu.jpg` [Machu Picchu โดย W. Bulach](https://commons.wikimedia.org/wiki/File:00_1596_Ruinenstadt_Machu_Picchu.jpg) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) · ใช้ภาพย่อและจัดครอปด้วย CSS
 - `artifact.jpg` [Female figurine จาก The Metropolitan Museum of Art](https://commons.wikimedia.org/wiki/File:Female_figurine_MET_LC-1979_206_1058-image_4.jpg) · [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) · จัดครอปด้วย CSS
 - `gold.jpg` [Native gold nuggets โดย Aram Dulyan](https://commons.wikimedia.org/wiki/File:Native_gold_nuggets.jpg) · สาธารณสมบัติ · จัดครอปด้วย CSS
+
+## Panic on Wall Street! ออนไลน์
+
+จาก Hub เลือก **เข้าเล่น Panic on Wall Street!** หรือเปิดเส้นทาง `/games/panic-on-wall-street` สร้างห้องและแชร์ลิงก์ให้เพื่อน เกมรองรับ 3–11 คน เล่น 5 เดือน เปิด **วิธีเล่น** ในหน้าเกมเพื่อดูขั้นตอน รายการอุปกรณ์ และแหล่งอ้างอิง
+
+ผู้จัดการเริ่มด้วยบริษัทปกติ 3 ใบต่อคน ทั้งชุดมี 46 ใบ แบ่งเป็นบริษัทปกติ 39 ใบ และบริษัทผลตอบแทน ×2 อีก 7 ใบ ฉบับเว็บใช้ชื่อบริษัทสมมติและภาพปกสร้างใหม่ มีเวลาเจรจา 2 นาที และให้เวลาเสนอราคาใหม่ในช่วงประมูลครั้งละ 25 วินาที [คู่มือภาษาอังกฤษ](https://cs.uwaterloo.ca/~dtompkin/archive/dtlib/base/Panic%20on%20Wall%20Street%21.pdf) · [หน้าลูกเต๋า](https://www.aleakybos.ch/Wanted.htm)
+
+## Cloudflare Workers
+
+Run `npm ci` and `npx wrangler dev` from the project root to test all seven games locally. `wrangler.jsonc` serves files in `public/` and routes room requests to SQLite-backed Durable Objects. Each game and room code has its own object.
+
+For a public deployment, run `npx wrangler login` and `npx wrangler deploy`. Open the printed Workers URL and create a new room there. Room codes and sessions from the Node.js host belong to that host.

@@ -6,12 +6,20 @@
   <title>I’m the Boss! • โต๊ะเกม</title>
   <link rel="stylesheet" href="/boss-online.css">
   <script type="module" src="/boss-online.js"></script>
+<link rel="stylesheet" href="/game-shell.css">
 </head>
-<body>
-  <header><div class="shell masthead"><a class="hub-link" href="/">← กลับโต๊ะเกม</a><strong>I’m the Boss!</strong><span id="room-label"></span></div></header>
-  <main class="shell">
+<body class="game-page game-boss" style="--game-accent:#f4c976">
+<a class="skip-link" href="#game-main">ข้ามไปยังเกม</a>
+  <header><div class="shell masthead">
+    <a class="hub-link" href="/">← กลับโต๊ะเกม</a><strong>I’m the Boss!</strong><span id="room-label"></span>
+    <nav class="help-nav" aria-label="คู่มือเกม">
+      <button type="button" data-help="rules-help" aria-haspopup="dialog">วิธีเล่น</button>
+      <button type="button" data-help="cards-help" aria-haspopup="dialog">ดูการ์ด</button>
+    </nav>
+  </div></header>
+  <main id="game-main" tabindex="-1" class="shell">
     <p id="status" role="status"></p>
-    <section class="entry" id="entry">
+    <section class="entry game-entry" id="entry">
       <div class="entry-art">
         <img src="/assets/boss/cards/boardroom.png" alt="">
         <div class="entry-caption"><span>3–6 คน · เล่นออนไลน์</span><h1>เปิดโต๊ะเจรจา</h1></div>
@@ -73,5 +81,33 @@
       </details>
     </div>
   </main>
+  <dialog class="help-dialog" id="rules-help" aria-labelledby="rules-help-title">
+    <div class="help-heading">
+      <h2 id="rules-help-title">วิธีเล่น I’m the Boss!</h2>
+      <form method="dialog"><button aria-label="ปิดวิธีเล่น" autofocus>ปิด</button></form>
+    </div>
+    <ol class="rules-steps">
+      <li><strong>เริ่มเกม</strong> ทุกคนได้การ์ดอิทธิพลคนละ 5 ใบ ถ้าเล่น 3 คนได้ป้ายนักลงทุนคนละ 2 ป้าย ถ้าเล่น 4–6 คนได้คนละ 1 ป้ายและวางป้ายที่เหลือไว้ข้างกระดาน ระบบสุ่มคนเริ่ม แล้วให้คนทางขวาของเขาเลือกช่องวางตัวเดินกลาง</li>
+      <li><strong>เปิดดีลหรือทอยเต๋า</strong> เจ้าของตาเปิดดีลที่ตัวเดินอยู่ได้ทันที หรือทอยเพื่อเดินข้ามช่องที่ปิดแล้ว หลังเดินเสร็จเลือกเปิดดีลหรือจั่ว 3 ใบแล้วจบตา ถ้ามือเกิน 12 ใบ ให้ทิ้งลงมาถึงเพดานหรือใช้ Recruitment ชุดสามใบ</li>
+      <li><strong>เลือกทีมให้ครบ</strong> คนเปิดดีลเป็นบอส ช่องบนกระดานระบุจำนวนทีมที่ต้องเลือกจากแต่ละกลุ่มและตัวคูณปันผล เช่น <b>$ × 4</b> เมื่อ <b>$ = 2 ล้าน</b> เงินดีลคือ 8 ล้าน แต่ละสีเลือกตัวแทนได้หนึ่งคน</li>
+      <li><strong>ส่งข้อเสนอและเล่นการ์ดแทรก</strong> ทีมของบอสที่ใช้ได้พร้อมเข้าดีลทันที บอสเสนอส่วนแบ่งให้ทีมอื่น และเจ้าของทีมกดยอมรับ ปฏิเสธ หรือขอยอดใหม่ได้ ทุกคนเล่นการ์ดแทรกระหว่างเจรจาได้ตามจังหวะของการ์ด</li>
+      <li><strong>ปิดดีล</strong> เมื่อเลือกทีมครบและได้รับคำตกลงแล้ว บอสกด <b>เตรียมปิดดีล</b> ทุกคนมีเวลาตอบโต้ 12 วินาที หรือกดผ่านเพื่อให้จังหวะนี้จบเร็วขึ้น เมื่อปิดสำเร็จ ระบบจ่ายตามข้อตกลง บอสรับเงินที่เหลือ และตัวเดินไปช่องว่างถัดไป</li>
+      <li><strong>ส่งตาและจบเกม</strong> ถ้าดีลล่ม ช่องเดิมยังเปิดและไม่มีการจ่ายเงิน ตาถัดไปเป็นของคนทางซ้ายของบอสคนสุดท้าย ตั้งแต่ดีลสำเร็จครั้งที่ 10 ระบบทอยตามเงื่อนไขบนแผ่นดีล ถ้าถึงดีลที่ 15 เกมจบแน่นอน คนที่มีเงินมากที่สุดชนะ</li>
+    </ol>
+  </dialog>
+  <dialog class="help-dialog" id="cards-help" aria-labelledby="cards-help-title">
+    <div class="help-heading">
+      <h2 id="cards-help-title">การ์ดอิทธิพล</h2>
+      <form method="dialog"><button aria-label="ปิดคู่มือการ์ด" autofocus>ปิด</button></form>
+    </div>
+    <ul class="card-guide">
+      <li><img src="/assets/boss/cards/team-blue.png" loading="lazy" alt=""><div><h3>Team</h3><p>ลงตัวแทนสีเดียวกับทีมที่ต้องการเข้าดีล บอสเลือกได้ว่าจะใช้ตัวแทนจากการ์ดหรือป้ายนักลงทุน ใบที่ลงไว้แต่ไม่ได้ใช้และไม่ได้ถูก Travel จะกลับขึ้นมือเมื่อจบดีล</p></div></li>
+      <li><img src="/assets/boss/cards/travel-blue-v2.png" loading="lazy" alt=""><div><h3>Travel สีทีม</h3><p>กันป้ายนักลงทุนหรือการ์ด Team ของผู้เล่นอื่นที่มีสีตรงกันออกจากดีลนี้ ถ้าเป้าหมายเป็นการ์ด Team จะทิ้งทั้ง Team และ Travel เมื่อผลมีผล</p></div></li>
+      <li><img src="/assets/boss/cards/travel-wild-v2.png" loading="lazy" alt=""><div><h3>Travel สีเทา <span>?</span></h3><p>ใช้ผลเดียวกับ Travel สีทีม แต่เลือกเป้าหมายได้ทุกสี</p></div></li>
+      <li><img src="/assets/boss/cards/recruitment-v2.png" loading="lazy" alt=""><div><h3>Recruitment ×3</h3><p>เล่นพร้อมกัน 3 ใบเพื่อย้ายป้ายนักลงทุนมาเป็นของคุณ ถ้ายังมีป้ายว่าง ต้องเลือกป้ายว่างก่อน ใช้ได้ระหว่างเจรจาหรือเมื่อจั่วจนมือเกิน 12 ใบ</p></div></li>
+      <li><img src="/assets/boss/cards/boss-v2.png" loading="lazy" alt=""><div><h3>Boss</h3><p>แย่งตำแหน่งบอสของดีลปัจจุบัน บอสคนใหม่มีสิทธิ์คุมข้อเสนอและปิดดีล การ์ด Team ที่ลงแล้วและผล Travel ยังอยู่</p></div></li>
+      <li><img src="/assets/boss/cards/stop-v2.png" loading="lazy" alt=""><div><h3>Stop</h3><p>ใช้ในช่วงตอบโต้ 12 วินาทีเพื่อยกเลิก Travel, Boss หรือ Recruitment ชุดสามใบที่เพิ่งลง ใช้ช่วยคนอื่นได้ และใช้ยกเลิก Stop อีกใบไม่ได้</p></div></li>
+    </ul>
+  </dialog>
 </body>
 </html>

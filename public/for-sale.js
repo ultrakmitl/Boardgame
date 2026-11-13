@@ -1,3 +1,4 @@
+import { startRoomPolling } from './room-polling.js';
 const $ = id => document.getElementById(id);
 const board = $('board');
 const names = [
@@ -289,4 +290,4 @@ if (validCode(inviteCode)) {
     refreshRoom();
   }
 }
-setInterval(refreshRoom, 850);
+startRoomPolling(refreshRoom, () => Boolean(session), () => Boolean(game));
